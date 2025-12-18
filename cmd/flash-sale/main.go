@@ -11,7 +11,6 @@ import (
 	"github.com/qs-lzh/flash-sale/internal/app"
 	"github.com/qs-lzh/flash-sale/internal/cache"
 	"github.com/qs-lzh/flash-sale/internal/handler"
-	"github.com/qs-lzh/flash-sale/internal/model"
 	"github.com/qs-lzh/flash-sale/internal/mq"
 )
 

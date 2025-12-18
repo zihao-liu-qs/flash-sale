@@ -1,4 +1,4 @@
-# Movie-Reservation-v2
+# Flash-Sale
 
 这是一个使用go实现的并发抢票系统，能够正确、快速处理高并发量下的订票请求，避免超卖和重复购买，并能够保证Redis与数据库中订单的一致性
 
@@ -38,9 +38,12 @@ model - repositorty - domain service - workflow service - app - handler
 ## 文件树
 
 ```text
-movie-reservation/
+## 项目结构
+
+```text
+flash-sale/
 ├── cmd
-│   └── movie-reservation
+│   └── flash-sale
 │       └── main.go              # 程序入口
 ├── config
 │   └── config.go                # 配置加载
@@ -50,8 +53,8 @@ movie-reservation/
 │   ├── app
 │   │   └── app.go               # 应用初始化
 │   ├── cache
-│   │   ├── constants.go         # Redis key 和 lua脚本
-│   │   └── redis.go             # Redis 客户端与操作
+│   │   ├── constants.go         # Redis key / 常量
+│   │   └── redis.go             # Redis 操作封装
 │   ├── handler
 │   │   └── handler.go           # HTTP 接口层
 │   ├── model
@@ -59,12 +62,12 @@ movie-reservation/
 │   ├── mq
 │   │   ├── constants.go         # MQ 常量
 │   │   ├── producer.go          # 消息生产者
-│   │   └── rabbitmq.go          # MQ 连接封装
+│   │   └── rabbitmq.go          # RabbitMQ 封装
 │   ├── repository
-│   │   ├── movie_repo.go        # Movie 数据访问
-│   │   ├── order_repo.go        # Order 数据访问
-│   │   ├── showtime_repo.go     # Showtime 数据访问
-│   │   └── user_repo.go         # User 数据访问
+│   │   ├── movie_repo.go        # 商品/影片数据访问
+│   │   ├── order_repo.go        # 订单数据访问
+│   │   ├── showtime_repo.go     # 场次/库存数据访问
+│   │   └── user_repo.go         # 用户数据访问
 │   ├── service
 │   │   ├── domain
 │   │   │   ├── movie_service.go
