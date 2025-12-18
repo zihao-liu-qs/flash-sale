@@ -33,8 +33,6 @@ Redis用lua脚本， Postgresql使用GORM提供的Transaction
 
 model - repositorty - domain service - workflow service - app - handler
 
-结构清晰，边界分明，易于拓展
-
 ## 文件树
 
 ```text
