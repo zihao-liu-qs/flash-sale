@@ -1,0 +1,86 @@
+services:
+  flash-sale:
+    build: .
+    ports:
+      - "4000:4000"
+    environment:
+      DATABASE_DSN: "host=db user=flash_sale_user password=flash-sale dbname=flash_sale_db port=5432 sslmode=disable"
+      ADDR: ":4000"
+      CACHE_URL: "redis:6379"
+      RABBIT_MQ_URL: "amqp://guest:guest@rabbitmq:5672/"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    restart: on-failure
+
+
+  db:
+    image: postgres:13
+    environment:
+      POSTGRES_DB: flash_sale_db
+      POSTGRES_USER: flash_sale_user
+      POSTGRES_PASSWORD: flash-sale
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U flash_sale_user -d flash_sale_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  redis:
+    image: redis:6.2-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  rabbitmq:
+    image: rabbitmq:3.9-management-alpine
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  test:
+    build:
+      context: .
+      dockerfile: Dockerfile.test
+    environment:
+      DATABASE_DSN: "host=db user=flash_sale_user password=flash-sale dbname=flash_sale_db port=5432 sslmode=disable"
+      CACHE_URL: "redis:6379"
+      BASE_URL: "http://flash-sale:4000"
+    depends_on:
+      flash-sale:
+        condition: service_started
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    profiles:
+      - test
+
+
+volumes:
+  postgres_data:

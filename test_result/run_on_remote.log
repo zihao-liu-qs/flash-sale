@@ -1,0 +1,1049 @@
+root@flash-sale-server:~/flash-sale# ls
+cmd  config  docker-compose.yml  Dockerfile  Dockerfile.test  env.example  go.mod  go.sum  internal  Makefile  README.md  server.log  test
+root@flash-sale-server:~/flash-sale# docker compose up --build
+[+] Building 1.8s (17/17) FINISHED
+ => [internal] load local bake definitions                                                                                                                      0.0s
+ => => reading from stdin 506B                                                                                                                                  0.0s
+ => [internal] load build definition from Dockerfile                                                                                                            0.0s
+ => => transferring dockerfile: 531B                                                                                                                            0.0s
+ => [internal] load metadata for docker.io/library/alpine:3.14                                                                                                  0.0s
+ => [internal] load metadata for docker.io/library/golang:1.24-alpine                                                                                           1.6s
+ => [internal] load .dockerignore                                                                                                                               0.0s
+ => => transferring context: 2B                                                                                                                                 0.0s
+ => [builder 1/6] FROM docker.io/library/golang:1.24-alpine@sha256:cac3bbfd11d3b7c0a134172aabafb8ab415abb8efefc313ba25d20bb94d0155f                             0.0s
+ => => resolve docker.io/library/golang:1.24-alpine@sha256:cac3bbfd11d3b7c0a134172aabafb8ab415abb8efefc313ba25d20bb94d0155f                                     0.0s
+ => [stage-1 1/3] FROM docker.io/library/alpine:3.14@sha256:0f2d5c38dd7a4f4f733e688e3a6733cb5ab1ac6e3cb4603a5dd564e5bfb80eed                                    0.0s
+ => => resolve docker.io/library/alpine:3.14@sha256:0f2d5c38dd7a4f4f733e688e3a6733cb5ab1ac6e3cb4603a5dd564e5bfb80eed                                            0.0s
+ => [internal] load build context                                                                                                                               0.0s
+ => => transferring context: 4.08kB                                                                                                                             0.0s
+ => CACHED [stage-1 2/3] WORKDIR /app                                                                                                                           0.0s
+ => CACHED [builder 2/6] WORKDIR /app                                                                                                                           0.0s
+ => CACHED [builder 3/6] COPY go.mod go.sum ./                                                                                                                  0.0s
+ => CACHED [builder 4/6] RUN go mod download                                                                                                                    0.0s
+ => CACHED [builder 5/6] COPY . .                                                                                                                               0.0s
+ => CACHED [builder 6/6] RUN go build -o bin/main ./cmd/flash-sale/main.go                                                                                      0.0s
+ => CACHED [stage-1 3/3] COPY --from=builder /app/bin/main .                                                                                                    0.0s
+ => exporting to image                                                                                                                                          0.1s
+ => => exporting layers                                                                                                                                         0.0s
+ => => exporting manifest sha256:7536c138ad771205dad0ff95eb22f2a826cf01a8e0a9afbd657abe157aab21cc                                                               0.0s
+ => => exporting config sha256:86b48b8b0749d7b0fd2b9ecde99f138cc8b696aacf7a3aad838fa34db992aa04                                                                 0.0s
+ => => exporting attestation manifest sha256:ab5844173b1575b7f4753bf7af394ab81108ba5fe2fa50e92ece55ebfe1a1405                                                   0.0s
+ => => exporting manifest list sha256:37f4cbbac67e943f06a1fcb5fc7993e0c76aafef4c0e04172956ebd3c3d035c4                                                          0.0s
+ => => naming to docker.io/library/flash-sale-flash-sale:latest                                                                                                 0.0s
+ => => unpacking to docker.io/library/flash-sale-flash-sale:latest                                                                                              0.0s
+ => resolving provenance for metadata file                                                                                                                      0.0s
+[+] up 2/2
+ ✔ Image flash-sale-flash-sale       Built                                                                                                                       1.9s
+ ✔ Container flash-sale-flash-sale-1 Recreated                                                                                                                   0.1s
+Attaching to db-1, flash-sale-1, rabbitmq-1, redis-1
+db-1  |
+db-1  | PostgreSQL Database directory appears to contain a database; Skipping initialization
+db-1  |
+db-1  | 2026-01-31 09:34:56.010 UTC [1] LOG:  starting PostgreSQL 13.23 (Debian 13.23-1.pgdg13+1) on x86_64-pc-linux-gnu, compiled by gcc (Debian 14.2.0-19) 14.2.0, 64-bit
+db-1  | 2026-01-31 09:34:56.010 UTC [1] LOG:  listening on IPv4 address "0.0.0.0", port 5432
+db-1  | 2026-01-31 09:34:56.011 UTC [1] LOG:  listening on IPv6 address "::", port 5432
+redis-1  | 1:C 31 Jan 2026 09:34:56.012 # oO0OoO0OoO0Oo Redis is starting oO0OoO0OoO0Oo
+redis-1  | 1:C 31 Jan 2026 09:34:56.012 # Redis version=6.2.21, bits=64, commit=00000000, modified=0, pid=1, just started
+redis-1  | 1:C 31 Jan 2026 09:34:56.012 # Warning: no config file specified, using the default config. In order to specify a config file use redis-server /path/to/redis.conf
+redis-1  | 1:M 31 Jan 2026 09:34:56.013 * Increased maximum number of open files to 10032 (it was originally set to 1024).
+db-1     | 2026-01-31 09:34:56.014 UTC [1] LOG:  listening on Unix socket "/var/run/postgresql/.s.PGSQL.5432"
+redis-1  | 1:M 31 Jan 2026 09:34:56.014 * monotonic clock: POSIX clock_gettime
+redis-1  | 1:M 31 Jan 2026 09:34:56.015 * Running mode=standalone, port=6379.
+redis-1  | 1:M 31 Jan 2026 09:34:56.015 # Server initialized
+redis-1  | 1:M 31 Jan 2026 09:34:56.015 # WARNING Memory overcommit must be enabled! Without it, a background save or replication may fail under low memory condition. Being disabled, it can can also cause failures without low memory condition, see https://github.com/jemalloc/jemalloc/issues/1328. To fix this issue add 'vm.overcommit_memory = 1' to /etc/sysctl.conf and then reboot or run the command 'sysctl vm.overcommit_memory=1' for this to take effect.
+redis-1  | 1:M 31 Jan 2026 09:34:56.015 * Loading RDB produced by version 6.2.21
+redis-1  | 1:M 31 Jan 2026 09:34:56.015 * RDB age 53 seconds
+redis-1  | 1:M 31 Jan 2026 09:34:56.015 * RDB memory usage when created 0.81 Mb
+redis-1  | 1:M 31 Jan 2026 09:34:56.015 # Done loading RDB, keys loaded: 304, keys expired: 0.
+redis-1  | 1:M 31 Jan 2026 09:34:56.015 * DB loaded from disk: 0.000 seconds
+redis-1  | 1:M 31 Jan 2026 09:34:56.015 * Ready to accept connections
+db-1     | 2026-01-31 09:34:56.021 UTC [28] LOG:  database system was shut down at 2026-01-31 09:34:03 UTC
+db-1     | 2026-01-31 09:34:56.025 UTC [1] LOG:  database system is ready to accept connections
+Container flash-sale-redis-1 Waiting
+Container flash-sale-rabbitmq-1 Waiting
+Container flash-sale-db-1 Waiting
+rabbitmq-1  | 2026-01-31 09:34:57.875412+00:00 [info] <0.230.0> Feature flags: list of feature flags found:
+rabbitmq-1  | 2026-01-31 09:34:57.890572+00:00 [info] <0.230.0> Feature flags:   [x] implicit_default_bindings
+rabbitmq-1  | 2026-01-31 09:34:57.890668+00:00 [info] <0.230.0> Feature flags:   [x] maintenance_mode_status
+rabbitmq-1  | 2026-01-31 09:34:57.890869+00:00 [info] <0.230.0> Feature flags:   [x] quorum_queue
+rabbitmq-1  | 2026-01-31 09:34:57.890987+00:00 [info] <0.230.0> Feature flags:   [x] stream_queue
+rabbitmq-1  | 2026-01-31 09:34:57.891061+00:00 [info] <0.230.0> Feature flags:   [x] user_limits
+rabbitmq-1  | 2026-01-31 09:34:57.891138+00:00 [info] <0.230.0> Feature flags:   [x] virtual_host_metadata
+rabbitmq-1  | 2026-01-31 09:34:57.891206+00:00 [info] <0.230.0> Feature flags: feature flag states written to disk: yes
+rabbitmq-1  | 2026-01-31 09:34:58.084707+00:00 [notice] <0.44.0> Application syslog exited with reason: stopped
+rabbitmq-1  | 2026-01-31 09:34:58.084814+00:00 [notice] <0.230.0> Logging: switching to configured handler(s); following messages may not be visible in this log output
+rabbitmq-1  | 2026-01-31 09:34:58.112837+00:00 [notice] <0.230.0> Logging: configured log handlers are now ACTIVE
+rabbitmq-1  | 2026-01-31 09:34:59.658307+00:00 [info] <0.230.0> ra: starting system quorum_queues
+rabbitmq-1  | 2026-01-31 09:34:59.658389+00:00 [info] <0.230.0> starting Ra system: quorum_queues in directory: /var/lib/rabbitmq/mnesia/rabbit@a316391f1317/quorum/rabbit@a316391f1317
+rabbitmq-1  | 2026-01-31 09:34:59.659689+00:00 [info] <0.297.0> ra system 'quorum_queues' running pre init for 0 registered servers
+rabbitmq-1  | 2026-01-31 09:34:59.660625+00:00 [info] <0.300.0> ra: meta data store initialised for system quorum_queues. 0 record(s) recovered
+rabbitmq-1  | 2026-01-31 09:34:59.660735+00:00 [notice] <0.310.0> WAL: ra_log_wal init, open tbls: ra_log_open_mem_tables, closed tbls: ra_log_closed_mem_tables
+rabbitmq-1  | 2026-01-31 09:34:59.664040+00:00 [info] <0.230.0> ra: starting system coordination
+rabbitmq-1  | 2026-01-31 09:34:59.664072+00:00 [info] <0.230.0> starting Ra system: coordination in directory: /var/lib/rabbitmq/mnesia/rabbit@a316391f1317/coordination/rabbit@a316391f1317
+rabbitmq-1  | 2026-01-31 09:34:59.665286+00:00 [info] <0.348.0> ra system 'coordination' running pre init for 0 registered servers
+rabbitmq-1  | 2026-01-31 09:34:59.666003+00:00 [info] <0.349.0> ra: meta data store initialised for system coordination. 0 record(s) recovered
+rabbitmq-1  | 2026-01-31 09:34:59.666109+00:00 [notice] <0.354.0> WAL: ra_coordination_log_wal init, open tbls: ra_coordination_log_open_mem_tables, closed tbls: ra_coordination_log_closed_mem_tables
+rabbitmq-1  | 2026-01-31 09:34:59.669193+00:00 [info] <0.230.0>
+rabbitmq-1  | 2026-01-31 09:34:59.669193+00:00 [info] <0.230.0>  Starting RabbitMQ 3.9.29 on Erlang 25.3.2.9 [jit]
+rabbitmq-1  | 2026-01-31 09:34:59.669193+00:00 [info] <0.230.0>  Copyright (c) 2007-2023 VMware, Inc. or its affiliates.
+rabbitmq-1  | 2026-01-31 09:34:59.669193+00:00 [info] <0.230.0>  Licensed under the MPL 2.0. Website: https://rabbitmq.com
+rabbitmq-1  | 2026-01-31 09:34:59.669240+00:00 [error] <0.230.0> This release series has reached end of life and is no longer supported. Please visit https://rabbitmq.com/versions.html to learn more and upgrade
+rabbitmq-1  |
+rabbitmq-1  |   ##  ##      RabbitMQ 3.9.29
+rabbitmq-1  |   ##  ##
+rabbitmq-1  |   ##########  Copyright (c) 2007-2023 VMware, Inc. or its affiliates.
+rabbitmq-1  |   ######  ##
+rabbitmq-1  |   ##########  Licensed under the MPL 2.0. Website: https://rabbitmq.com
+rabbitmq-1  |
+rabbitmq-1  |   Erlang:      25.3.2.9 [jit]
+rabbitmq-1  |   TLS Library: OpenSSL - OpenSSL 3.1.5 30 Jan 2024
+rabbitmq-1  |   Release series support status: out of support
+rabbitmq-1  |
+rabbitmq-1  |   Doc guides:  https://rabbitmq.com/documentation.html
+rabbitmq-1  |   Support:     https://rabbitmq.com/contact.html
+rabbitmq-1  |   Tutorials:   https://rabbitmq.com/getstarted.html
+rabbitmq-1  |   Monitoring:  https://rabbitmq.com/monitoring.html
+rabbitmq-1  |
+rabbitmq-1  |   Logs: /var/log/rabbitmq/rabbit@a316391f1317_upgrade.log
+rabbitmq-1  |         <stdout>
+rabbitmq-1  |
+rabbitmq-1  |   Config file(s): /etc/rabbitmq/conf.d/10-defaults.conf
+rabbitmq-1  |
+rabbitmq-1  |   Starting broker...2026-01-31 09:34:59.677914+00:00 [info] <0.230.0>
+rabbitmq-1  | 2026-01-31 09:34:59.677914+00:00 [info] <0.230.0>  node           : rabbit@a316391f1317
+rabbitmq-1  | 2026-01-31 09:34:59.677914+00:00 [info] <0.230.0>  home dir       : /var/lib/rabbitmq
+rabbitmq-1  | 2026-01-31 09:34:59.677914+00:00 [info] <0.230.0>  config file(s) : /etc/rabbitmq/conf.d/10-defaults.conf
+rabbitmq-1  | 2026-01-31 09:34:59.677914+00:00 [info] <0.230.0>  cookie hash    : u5mr+66MgtrS021uXUojag==
+rabbitmq-1  | 2026-01-31 09:34:59.677914+00:00 [info] <0.230.0>  log(s)         : /var/log/rabbitmq/rabbit@a316391f1317_upgrade.log
+rabbitmq-1  | 2026-01-31 09:34:59.677914+00:00 [info] <0.230.0>                 : <stdout>
+rabbitmq-1  | 2026-01-31 09:34:59.677914+00:00 [info] <0.230.0>  database dir   : /var/lib/rabbitmq/mnesia/rabbit@a316391f1317
+rabbitmq-1  | 2026-01-31 09:34:59.940555+00:00 [info] <0.230.0> Feature flags: list of feature flags found:
+rabbitmq-1  | 2026-01-31 09:34:59.940615+00:00 [info] <0.230.0> Feature flags:   [x] drop_unroutable_metric
+rabbitmq-1  | 2026-01-31 09:34:59.940713+00:00 [info] <0.230.0> Feature flags:   [x] empty_basic_get_metric
+rabbitmq-1  | 2026-01-31 09:34:59.941114+00:00 [info] <0.230.0> Feature flags:   [x] implicit_default_bindings
+rabbitmq-1  | 2026-01-31 09:34:59.941676+00:00 [info] <0.230.0> Feature flags:   [x] maintenance_mode_status
+rabbitmq-1  | 2026-01-31 09:34:59.941750+00:00 [info] <0.230.0> Feature flags:   [x] quorum_queue
+rabbitmq-1  | 2026-01-31 09:34:59.942526+00:00 [info] <0.230.0> Feature flags:   [x] stream_queue
+rabbitmq-1  | 2026-01-31 09:34:59.943183+00:00 [info] <0.230.0> Feature flags:   [x] user_limits
+rabbitmq-1  | 2026-01-31 09:34:59.943629+00:00 [info] <0.230.0> Feature flags:   [x] virtual_host_metadata
+rabbitmq-1  | 2026-01-31 09:34:59.943712+00:00 [info] <0.230.0> Feature flags: feature flag states written to disk: yes
+rabbitmq-1  | 2026-01-31 09:35:00.163974+00:00 [info] <0.230.0> Running boot step pre_boot defined by app rabbit
+rabbitmq-1  | 2026-01-31 09:35:00.164011+00:00 [info] <0.230.0> Running boot step rabbit_global_counters defined by app rabbit
+rabbitmq-1  | 2026-01-31 09:35:00.164188+00:00 [info] <0.230.0> Running boot step rabbit_osiris_metrics defined by app rabbit
+rabbitmq-1  | 2026-01-31 09:35:00.164683+00:00 [info] <0.230.0> Running boot step rabbit_core_metrics defined by app rabbit
+rabbitmq-1  | 2026-01-31 09:35:00.165192+00:00 [info] <0.230.0> Running boot step rabbit_alarm defined by app rabbit
+rabbitmq-1  | 2026-01-31 09:35:00.167208+00:00 [info] <0.364.0> Memory high watermark set to 1439 MiB (1509072896 bytes) of 3597 MiB (3772682240 bytes) total
+rabbitmq-1  | 2026-01-31 09:35:00.168767+00:00 [info] <0.366.0> Enabling free disk space monitoring
+rabbitmq-1  | 2026-01-31 09:35:00.168802+00:00 [info] <0.366.0> Disk free limit set to 50MB
+rabbitmq-1  | 2026-01-31 09:35:00.171827+00:00 [info] <0.230.0> Running boot step code_server_cache defined by app rabbit
+rabbitmq-1  | 2026-01-31 09:35:00.171894+00:00 [info] <0.230.0> Running boot step file_handle_cache defined by app rabbit
+rabbitmq-1  | 2026-01-31 09:35:00.172064+00:00 [info] <0.369.0> Limiting to approx 927 file handles (832 sockets)
+rabbitmq-1  | 2026-01-31 09:35:00.172544+00:00 [info] <0.370.0> FHC read buffering: OFF
+rabbitmq-1  | 2026-01-31 09:35:00.172576+00:00 [info] <0.370.0> FHC write buffering: ON
+rabbitmq-1  | 2026-01-31 09:35:00.173363+00:00 [info] <0.230.0> Running boot step worker_pool defined by app rabbit
+rabbitmq-1  | 2026-01-31 09:35:00.173410+00:00 [info] <0.356.0> Will use 2 processes for default worker pool
+rabbitmq-1  | 2026-01-31 09:35:00.173430+00:00 [info] <0.356.0> Starting worker pool 'worker_pool' with 2 processes in it
+rabbitmq-1  | 2026-01-31 09:35:00.175256+00:00 [info] <0.230.0> Running boot step database defined by app rabbit
+rabbitmq-1  | 2026-01-31 09:35:00.181106+00:00 [info] <0.230.0> Waiting for Mnesia tables for 30000 ms, 9 retries left
+rabbitmq-1  | 2026-01-31 09:35:00.182623+00:00 [info] <0.230.0> Successfully synced tables from a peer
+rabbitmq-1  | 2026-01-31 09:35:00.182703+00:00 [info] <0.230.0> Waiting for Mnesia tables for 30000 ms, 9 retries left
+rabbitmq-1  | 2026-01-31 09:35:00.182798+00:00 [info] <0.230.0> Successfully synced tables from a peer
+rabbitmq-1  | 2026-01-31 09:35:00.193269+00:00 [info] <0.230.0> Waiting for Mnesia tables for 30000 ms, 9 retries left
+rabbitmq-1  | 2026-01-31 09:35:00.193415+00:00 [info] <0.230.0> Successfully synced tables from a peer
+rabbitmq-1  | 2026-01-31 09:35:00.193470+00:00 [info] <0.230.0> Peer discovery backend rabbit_peer_discovery_classic_config does not support registration, skipping registration.
+rabbitmq-1  | 2026-01-31 09:35:00.193564+00:00 [info] <0.230.0> Running boot step database_sync defined by app rabbit
+rabbitmq-1  | 2026-01-31 09:35:00.193631+00:00 [info] <0.230.0> Running boot step feature_flags defined by app rabbit
+rabbitmq-1  | 2026-01-31 09:35:00.193719+00:00 [info] <0.230.0> Running boot step codec_correctness_check defined by app rabbit
+rabbitmq-1  | 2026-01-31 09:35:00.193741+00:00 [info] <0.230.0> Running boot step external_infrastructure defined by app rabbit
+rabbitmq-1  | 2026-01-31 09:35:00.194809+00:00 [info] <0.230.0> Running boot step rabbit_event defined by app rabbit
+rabbitmq-1  | 2026-01-31 09:35:00.194958+00:00 [info] <0.230.0> Running boot step rabbit_registry defined by app rabbit
+rabbitmq-1  | 2026-01-31 09:35:00.195030+00:00 [info] <0.230.0> Running boot step rabbit_auth_mechanism_amqplain defined by app rabbit
+rabbitmq-1  | 2026-01-31 09:35:00.195102+00:00 [info] <0.230.0> Running boot step rabbit_auth_mechanism_cr_demo defined by app rabbit
+rabbitmq-1  | 2026-01-31 09:35:00.195195+00:00 [info] <0.230.0> Running boot step rabbit_auth_mechanism_plain defined by app rabbit
+rabbitmq-1  | 2026-01-31 09:35:00.195245+00:00 [info] <0.230.0> Running boot step rabbit_exchange_type_direct defined by app rabbit
+rabbitmq-1  | 2026-01-31 09:35:00.195275+00:00 [info] <0.230.0> Running boot step rabbit_exchange_type_fanout defined by app rabbit
+rabbitmq-1  | 2026-01-31 09:35:00.197584+00:00 [info] <0.230.0> Running boot step rabbit_exchange_type_headers defined by app rabbit
+rabbitmq-1  | 2026-01-31 09:35:00.197689+00:00 [info] <0.230.0> Running boot step rabbit_exchange_type_topic defined by app rabbit
+rabbitmq-1  | 2026-01-31 09:35:00.197745+00:00 [info] <0.230.0> Running boot step rabbit_mirror_queue_mode_all defined by app rabbit
+rabbitmq-1  | 2026-01-31 09:35:00.197810+00:00 [info] <0.230.0> Running boot step rabbit_mirror_queue_mode_exactly defined by app rabbit
+rabbitmq-1  | 2026-01-31 09:35:00.197868+00:00 [info] <0.230.0> Running boot step rabbit_mirror_queue_mode_nodes defined by app rabbit
+rabbitmq-1  | 2026-01-31 09:35:00.197912+00:00 [info] <0.230.0> Running boot step rabbit_priority_queue defined by app rabbit
+rabbitmq-1  | 2026-01-31 09:35:00.197933+00:00 [info] <0.230.0> Priority queues enabled, real BQ is rabbit_variable_queue
+rabbitmq-1  | 2026-01-31 09:35:00.197987+00:00 [info] <0.230.0> Running boot step rabbit_queue_location_client_local defined by app rabbit
+rabbitmq-1  | 2026-01-31 09:35:00.198023+00:00 [info] <0.230.0> Running boot step rabbit_queue_location_min_masters defined by app rabbit
+rabbitmq-1  | 2026-01-31 09:35:00.198048+00:00 [info] <0.230.0> Running boot step rabbit_queue_location_random defined by app rabbit
+rabbitmq-1  | 2026-01-31 09:35:00.198085+00:00 [info] <0.230.0> Running boot step kernel_ready defined by app rabbit
+rabbitmq-1  | 2026-01-31 09:35:00.198104+00:00 [info] <0.230.0> Running boot step rabbit_sysmon_minder defined by app rabbit
+rabbitmq-1  | 2026-01-31 09:35:00.203813+00:00 [info] <0.230.0> Running boot step rabbit_epmd_monitor defined by app rabbit
+rabbitmq-1  | 2026-01-31 09:35:00.205055+00:00 [info] <0.390.0> epmd monitor knows us, inter-node communication (distribution) port: 25672
+rabbitmq-1  | 2026-01-31 09:35:00.205192+00:00 [info] <0.230.0> Running boot step guid_generator defined by app rabbit
+rabbitmq-1  | 2026-01-31 09:35:00.213583+00:00 [info] <0.230.0> Running boot step rabbit_node_monitor defined by app rabbit
+rabbitmq-1  | 2026-01-31 09:35:00.213812+00:00 [info] <0.394.0> Starting rabbit_node_monitor
+rabbitmq-1  | 2026-01-31 09:35:00.213922+00:00 [info] <0.230.0> Running boot step delegate_sup defined by app rabbit
+rabbitmq-1  | 2026-01-31 09:35:00.214308+00:00 [info] <0.230.0> Running boot step rabbit_memory_monitor defined by app rabbit
+rabbitmq-1  | 2026-01-31 09:35:00.214488+00:00 [info] <0.230.0> Running boot step core_initialized defined by app rabbit
+rabbitmq-1  | 2026-01-31 09:35:00.214546+00:00 [info] <0.230.0> Running boot step upgrade_queues defined by app rabbit
+rabbitmq-1  | 2026-01-31 09:35:00.228715+00:00 [info] <0.230.0> Running boot step channel_tracking defined by app rabbit
+rabbitmq-1  | 2026-01-31 09:35:00.228877+00:00 [info] <0.230.0> Setting up a table for channel tracking on this node: tracked_channel_on_node_rabbit@a316391f1317
+rabbitmq-1  | 2026-01-31 09:35:00.228991+00:00 [info] <0.230.0> Setting up a table for channel tracking on this node: tracked_channel_table_per_user_on_node_rabbit@a316391f1317
+rabbitmq-1  | 2026-01-31 09:35:00.229107+00:00 [info] <0.230.0> Running boot step rabbit_channel_tracking_handler defined by app rabbit
+rabbitmq-1  | 2026-01-31 09:35:00.229175+00:00 [info] <0.230.0> Running boot step connection_tracking defined by app rabbit
+rabbitmq-1  | 2026-01-31 09:35:00.229282+00:00 [info] <0.230.0> Setting up a table for connection tracking on this node: tracked_connection_on_node_rabbit@a316391f1317
+rabbitmq-1  | 2026-01-31 09:35:00.229402+00:00 [info] <0.230.0> Setting up a table for per-vhost connection counting on this node: tracked_connection_per_vhost_on_node_rabbit@a316391f1317
+rabbitmq-1  | 2026-01-31 09:35:00.229529+00:00 [info] <0.230.0> Setting up a table for per-user connection counting on this node: tracked_connection_table_per_user_on_node_rabbit@a316391f1317
+rabbitmq-1  | 2026-01-31 09:35:00.231298+00:00 [info] <0.230.0> Running boot step rabbit_connection_tracking_handler defined by app rabbit
+rabbitmq-1  | 2026-01-31 09:35:00.231657+00:00 [info] <0.230.0> Running boot step rabbit_exchange_parameters defined by app rabbit
+rabbitmq-1  | 2026-01-31 09:35:00.231744+00:00 [info] <0.230.0> Running boot step rabbit_mirror_queue_misc defined by app rabbit
+rabbitmq-1  | 2026-01-31 09:35:00.231866+00:00 [info] <0.230.0> Running boot step rabbit_policies defined by app rabbit
+rabbitmq-1  | 2026-01-31 09:35:00.232028+00:00 [info] <0.230.0> Running boot step rabbit_policy defined by app rabbit
+rabbitmq-1  | 2026-01-31 09:35:00.232057+00:00 [info] <0.230.0> Running boot step rabbit_queue_location_validator defined by app rabbit
+rabbitmq-1  | 2026-01-31 09:35:00.232095+00:00 [info] <0.230.0> Running boot step rabbit_quorum_memory_manager defined by app rabbit
+rabbitmq-1  | 2026-01-31 09:35:00.232136+00:00 [info] <0.230.0> Running boot step rabbit_stream_coordinator defined by app rabbit
+rabbitmq-1  | 2026-01-31 09:35:00.232213+00:00 [info] <0.230.0> Running boot step rabbit_vhost_limit defined by app rabbit
+rabbitmq-1  | 2026-01-31 09:35:00.232270+00:00 [info] <0.230.0> Running boot step rabbit_mgmt_reset_handler defined by app rabbitmq_management
+rabbitmq-1  | 2026-01-31 09:35:00.232300+00:00 [info] <0.230.0> Running boot step rabbit_mgmt_db_handler defined by app rabbitmq_management_agent
+rabbitmq-1  | 2026-01-31 09:35:00.232338+00:00 [info] <0.230.0> Management plugin: using rates mode 'basic'
+rabbitmq-1  | 2026-01-31 09:35:00.235304+00:00 [info] <0.230.0> Running boot step recovery defined by app rabbit
+rabbitmq-1  | 2026-01-31 09:35:00.236351+00:00 [info] <0.432.0> Making sure data directory '/var/lib/rabbitmq/mnesia/rabbit@a316391f1317/msg_stores/vhosts/628WB79CIFDYO9LJI6DKMI09L' for vhost '/' exists
+rabbitmq-1  | 2026-01-31 09:35:00.239391+00:00 [info] <0.432.0> Starting message stores for vhost '/'
+rabbitmq-1  | 2026-01-31 09:35:00.239546+00:00 [info] <0.436.0> Message store "628WB79CIFDYO9LJI6DKMI09L/msg_store_transient": using rabbit_msg_store_ets_index to provide index
+rabbitmq-1  | 2026-01-31 09:35:00.241122+00:00 [info] <0.432.0> Started message store of type transient for vhost '/'
+rabbitmq-1  | 2026-01-31 09:35:00.241325+00:00 [info] <0.440.0> Message store "628WB79CIFDYO9LJI6DKMI09L/msg_store_persistent": using rabbit_msg_store_ets_index to provide index
+rabbitmq-1  | 2026-01-31 09:35:00.243488+00:00 [info] <0.432.0> Started message store of type persistent for vhost '/'
+rabbitmq-1  | 2026-01-31 09:35:00.249639+00:00 [info] <0.432.0> Recovering 4 queues of type rabbit_classic_queue took 12ms
+rabbitmq-1  | 2026-01-31 09:35:00.249695+00:00 [info] <0.432.0> Recovering 0 queues of type rabbit_quorum_queue took 0ms
+rabbitmq-1  | 2026-01-31 09:35:00.249740+00:00 [info] <0.432.0> Recovering 0 queues of type rabbit_stream_queue took 0ms
+rabbitmq-1  | 2026-01-31 09:35:00.250755+00:00 [info] <0.230.0> Running boot step empty_db_check defined by app rabbit
+rabbitmq-1  | 2026-01-31 09:35:00.250804+00:00 [info] <0.230.0> Will not seed default virtual host and user: have definitions to load...
+rabbitmq-1  | 2026-01-31 09:35:00.250834+00:00 [info] <0.230.0> Running boot step rabbit_looking_glass defined by app rabbit
+rabbitmq-1  | 2026-01-31 09:35:00.250857+00:00 [info] <0.230.0> Running boot step rabbit_core_metrics_gc defined by app rabbit
+rabbitmq-1  | 2026-01-31 09:35:00.250933+00:00 [info] <0.230.0> Running boot step background_gc defined by app rabbit
+rabbitmq-1  | 2026-01-31 09:35:00.250997+00:00 [info] <0.230.0> Running boot step routing_ready defined by app rabbit
+rabbitmq-1  | 2026-01-31 09:35:00.251016+00:00 [info] <0.230.0> Running boot step pre_flight defined by app rabbit
+rabbitmq-1  | 2026-01-31 09:35:00.251035+00:00 [info] <0.230.0> Running boot step notify_cluster defined by app rabbit
+rabbitmq-1  | 2026-01-31 09:35:00.251054+00:00 [info] <0.230.0> Running boot step networking defined by app rabbit
+rabbitmq-1  | 2026-01-31 09:35:00.251078+00:00 [info] <0.230.0> Running boot step definition_import_worker_pool defined by app rabbit
+rabbitmq-1  | 2026-01-31 09:35:00.251115+00:00 [info] <0.356.0> Starting worker pool 'definition_import_pool' with 2 processes in it
+rabbitmq-1  | 2026-01-31 09:35:00.254442+00:00 [info] <0.230.0> Running boot step cluster_name defined by app rabbit
+rabbitmq-1  | 2026-01-31 09:35:00.254503+00:00 [info] <0.230.0> Running boot step direct_client defined by app rabbit
+rabbitmq-1  | 2026-01-31 09:35:00.254603+00:00 [info] <0.230.0> Running boot step rabbit_maintenance_mode_state defined by app rabbit
+rabbitmq-1  | 2026-01-31 09:35:00.254628+00:00 [info] <0.230.0> Creating table rabbit_node_maintenance_states for feature flag `maintenance_mode_status`
+rabbitmq-1  | 2026-01-31 09:35:00.255282+00:00 [info] <0.230.0> Running boot step rabbit_management_load_definitions defined by app rabbitmq_management
+rabbitmq-1  | 2026-01-31 09:35:00.255894+00:00 [info] <0.488.0> Resetting node maintenance status
+rabbitmq-1  | 2026-01-31 09:35:00.267678+00:00 [info] <0.547.0> Management plugin: HTTP (non-TLS) listener started on port 15672
+rabbitmq-1  | 2026-01-31 09:35:00.267806+00:00 [info] <0.575.0> Statistics database started.
+rabbitmq-1  | 2026-01-31 09:35:00.267859+00:00 [info] <0.574.0> Starting worker pool 'management_worker_pool' with 3 processes in it
+rabbitmq-1  | 2026-01-31 09:35:00.277727+00:00 [info] <0.589.0> Prometheus metrics: HTTP (non-TLS) listener started on port 15692
+rabbitmq-1  | 2026-01-31 09:35:00.277858+00:00 [info] <0.488.0> Ready to start client connection listeners
+rabbitmq-1  | 2026-01-31 09:35:00.280033+00:00 [info] <0.633.0> started TCP listener on [::]:5672
+rabbitmq-1  |  completed with 4 plugins.
+rabbitmq-1  | 2026-01-31 09:35:00.348496+00:00 [info] <0.488.0> Server startup complete; 4 plugins started.
+rabbitmq-1  | 2026-01-31 09:35:00.348496+00:00 [info] <0.488.0>  * rabbitmq_prometheus
+rabbitmq-1  | 2026-01-31 09:35:00.348496+00:00 [info] <0.488.0>  * rabbitmq_management
+rabbitmq-1  | 2026-01-31 09:35:00.348496+00:00 [info] <0.488.0>  * rabbitmq_web_dispatch
+rabbitmq-1  | 2026-01-31 09:35:00.348496+00:00 [info] <0.488.0>  * rabbitmq_management_agent
+Container flash-sale-db-1 Healthy
+Container flash-sale-redis-1 Healthy
+Container flash-sale-rabbitmq-1 Healthy
+rabbitmq-1  | 2026-01-31 09:35:07.290556+00:00 [info] <0.638.0> accepting AMQP connection <0.638.0> (172.18.0.5:57104 -> 172.18.0.4:5672)
+rabbitmq-1  | 2026-01-31 09:35:07.291692+00:00 [info] <0.638.0> connection <0.638.0> (172.18.0.5:57104 -> 172.18.0.4:5672): user 'guest' authenticated and granted access to vhost '/'
+flash-sale-1  | [GIN-debug] [WARNING] Running in "debug" mode. Switch to "release" mode in production.
+flash-sale-1  |  - using env:	export GIN_MODE=release
+flash-sale-1  |  - using code:	gin.SetMode(gin.ReleaseMode)
+flash-sale-1  |
+flash-sale-1  | [GIN-debug] POST   /reserve                  --> github.com/qs-lzh/flash-sale/internal/handler.(*ReserveHandler).HandleReserve-fm (1 handlers)
+flash-sale-1  | [GIN-debug] [WARNING] You trusted all proxies, this is NOT safe. We recommend you to set a value.
+flash-sale-1  | Please check https://github.com/gin-gonic/gin/blob/master/docs/doc.md#dont-trust-all-proxies for details.
+flash-sale-1  | [GIN-debug] Listening and serving HTTP on :4000
+rabbitmq-1    | 2026-01-31 09:36:52.671182+00:00 [info] <0.715.0> accepting AMQP connection <0.715.0> (183.9.207.139:23538 -> 172.18.0.4:5672)
+rabbitmq-1    | 2026-01-31 09:36:52.716770+00:00 [info] <0.715.0> connection <0.715.0> (183.9.207.139:23538 -> 172.18.0.4:5672): user 'guest' authenticated and granted access to vhost '/'
+rabbitmq-1    | 2026-01-31 09:37:04.341064+00:00 [warning] <0.715.0> closing AMQP connection <0.715.0> (183.9.207.139:23538 -> 172.18.0.4:5672, vhost: '/', user: 'guest'):
+rabbitmq-1    | 2026-01-31 09:37:04.341064+00:00 [warning] <0.715.0> client unexpectedly closed TCP connection
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:12 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [2.442ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 6 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:12 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.232ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 17 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:12 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.137ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 16 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:12 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.392ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 52 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:12 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.136ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 68 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:12 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.133ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 98 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:12 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.086ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 41 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:12 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.171ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 55 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:12 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.107ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 84 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:12 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.076ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 15 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:12 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.088ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 18 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:12 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.092ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 93 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:12 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.129ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 7 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:12 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.093ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 63 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:12 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.097ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 32 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:12 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.246ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 72 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:12 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.082ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 51 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:12 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.085ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 39 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:12 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.089ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 13 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:12 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.149ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 64 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:12 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.151ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 47 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:12 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.341ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 36 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:12 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.245ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 76 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:12 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.568ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 28 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:12 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.145ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 66 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:12 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.129ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 73 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:12 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.123ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 5 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:12 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.099ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 10 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:12 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.117ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 69 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:12 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.126ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 19 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:12 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.089ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 34 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:12 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.119ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 24 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:12 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.143ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 95 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:12 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.077ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 11 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:12 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.261ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 79 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:12 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.080ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 67 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:12 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.086ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 9 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:12 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.075ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 53 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:12 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.075ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 86 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:12 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.083ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 29 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:12 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.075ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 33 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:12 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.270ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 3 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:12 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.166ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 38 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:12 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.350ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 82 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:12 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.200ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 65 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:12 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.361ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 90 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:12 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.101ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 80 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:12 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.142ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 4 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:12 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.145ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 1 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:12 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.458ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 46 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:12 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.128ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 27 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:12 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.114ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 54 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:12 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.102ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 50 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:12 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.143ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 37 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:12 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.113ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 14 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:12 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.124ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 30 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:12 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.082ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 83 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:12 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.082ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 88 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:12 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.389ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 2 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:12 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.133ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 58 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:12 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.100ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 85 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:12 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.090ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 71 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:12 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.080ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 31 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:12 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.092ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 25 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:12 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.137ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 92 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:12 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.097ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 59 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:12 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.090ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 75 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:12 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.105ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 87 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:12 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.137ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 35 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:12 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.086ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 12 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:12 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.085ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 91 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:12 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.103ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 61 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:12 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.136ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 20 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:12 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.431ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 94 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:12 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.325ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 60 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:12 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.237ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 97 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:12 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.167ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 42 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:12 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.125ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 99 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:12 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.194ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 26 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:12 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.132ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 70 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:12 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.084ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 8 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:12 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.120ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 57 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:12 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.172ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 48 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:12 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.124ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 78 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:12 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.217ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 43 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:12 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.092ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 62 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:12 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.084ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 77 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:12 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.086ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 56 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:12 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.075ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 49 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:12 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.133ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 21 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:12 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.153ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 40 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:12 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.119ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 100 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:12 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.120ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 22 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:13 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.490ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 74 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:13 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.391ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 89 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:13 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.067ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 23 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:13 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.062ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 96 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:13 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.090ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 81 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:13 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.075ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 44 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:13 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.132ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 45 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:18 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.461ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 1 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:22 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.460ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 21 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:22 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.114ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 19 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:22 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.069ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 26 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:22 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.114ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 43 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:22 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.176ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 37 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:22 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.094ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 28 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:22 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.077ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 80 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.108ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 6 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.078ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 78 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.069ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 109 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.540ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 5 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.301ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 49 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.124ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 55 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.359ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 53 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.506ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 112 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.104ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 117 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.347ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 92 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.132ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 124 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [1.794ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 84 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.253ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 25 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.224ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 56 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.098ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 101 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.086ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 7 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.282ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 133 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.123ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 39 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.096ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 147 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.082ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 20 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.074ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 46 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.122ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 94 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.118ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 62 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.078ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 115 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.072ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 18 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.121ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 140 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.123ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 100 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.119ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 73 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.103ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 118 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.151ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 97 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.136ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 16 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.076ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 13 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [2.012ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 15 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.125ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 68 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.083ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 38 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.082ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 17 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.096ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 138 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.086ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 135 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.133ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 22 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.142ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 51 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.110ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 58 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.177ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 44 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.180ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 148 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.146ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 32 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.096ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 149 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.084ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 125 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.305ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 63 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.259ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 79 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.089ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 65 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.079ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 42 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.069ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 122 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.074ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 88 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.065ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 126 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.074ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 130 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.077ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 9 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.183ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 40 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.138ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 102 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.146ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 36 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.128ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 136 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.279ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 143 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.151ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 121 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.128ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 47 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.079ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 27 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.151ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 61 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.094ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 24 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.102ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 66 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.096ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 10 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.097ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 31 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.108ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 1 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.097ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 83 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.093ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 107 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.078ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 45 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.082ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 119 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.086ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 132 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.087ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 108 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.123ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 120 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.141ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 59 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.114ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 34 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.220ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 103 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.110ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 105 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.105ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 64 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.103ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 106 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.408ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 90 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.125ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 48 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.092ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 89 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.110ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 85 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.093ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 150 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.097ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 30 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.108ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 93 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.082ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 8 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.074ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 104 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.087ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 52 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.077ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 81 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.101ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 110 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.122ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 12 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.153ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 4 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.141ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 54 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.121ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 74 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.116ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 123 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.117ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 145 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.131ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 86 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.132ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 87 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.140ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 67 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.104ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 91 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.103ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 95 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.093ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 98 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.094ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 137 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.093ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 99 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.089ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 139 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.110ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 33 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.091ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 60 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.093ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 113 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.099ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 3 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.098ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 72 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.085ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 141 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.083ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 11 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.124ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 142 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.129ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 41 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.088ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 144 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.120ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 131 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.110ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 57 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.105ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 127 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.106ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 76 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.106ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 29 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.081ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 50 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.081ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 35 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.082ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 23 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.084ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 82 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.085ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 75 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.077ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 2 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.083ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 71 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.084ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 96 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.282ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 14 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.093ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 111 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.206ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 69 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.278ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 77 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.113ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 128 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.094ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 70 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.118ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 116 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.093ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 129 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.091ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 146 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.081ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 114 ORDER BY "orders"."id" LIMIT 1
+flash-sale-1  |
+flash-sale-1  | 2026/01/31 09:37:23 /app/internal/repository/order_repo.go:46 record not found
+flash-sale-1  | [0.107ms] [rows:0] SELECT * FROM "orders" WHERE "orders"."id" = 134 ORDER BY "orders"."id" LIMIT 1
+redis-1       | 1:M 31 Jan 2026 09:39:57.071 * 100 changes in 300 seconds. Saving...
+redis-1       | 1:M 31 Jan 2026 09:39:57.071 * Background saving started by pid 396
+redis-1       | 396:C 31 Jan 2026 09:39:57.074 * DB saved on disk
+redis-1       | 396:C 31 Jan 2026 09:39:57.075 * RDB: 0 MB of memory used by copy-on-write
+redis-1       | 1:M 31 Jan 2026 09:39:57.172 * Background saving terminated with success
+Gracefully Stopping... press Ctrl+C again to force
+Container flash-sale-flash-sale-1 Stopping
+rabbitmq-1    | 2026-01-31 09:40:33.457890+00:00 [warning] <0.638.0> closing AMQP connection <0.638.0> (172.18.0.5:57104 -> 172.18.0.4:5672, vhost: '/', user: 'guest'):
+rabbitmq-1    | 2026-01-31 09:40:33.457890+00:00 [warning] <0.638.0> client unexpectedly closed TCP connection
+rabbitmq-1    | 2026-01-31 09:40:33.502148+00:00 [error] <0.642.0>     supervisor: {<0.642.0>,rabbit_channel_sup_sup}
+rabbitmq-1    | 2026-01-31 09:40:33.502148+00:00 [error] <0.642.0>     errorContext: shutdown_error
+rabbitmq-1    | 2026-01-31 09:40:33.502148+00:00 [error] <0.642.0>     reason: shutdown
+rabbitmq-1    | 2026-01-31 09:40:33.502148+00:00 [error] <0.642.0>     offender: [{nb_children,12},
+rabbitmq-1    | 2026-01-31 09:40:33.502148+00:00 [error] <0.642.0>                {id,channel_sup},
+rabbitmq-1    | 2026-01-31 09:40:33.502148+00:00 [error] <0.642.0>                {mfargs,{rabbit_channel_sup,start_link,[]}},
+rabbitmq-1    | 2026-01-31 09:40:33.502148+00:00 [error] <0.642.0>                {restart_type,temporary},
+rabbitmq-1    | 2026-01-31 09:40:33.502148+00:00 [error] <0.642.0>                {shutdown,infinity},
+rabbitmq-1    | 2026-01-31 09:40:33.502148+00:00 [error] <0.642.0>                {child_type,supervisor}]
+^CContainer flash-sale-redis-1 Killing
+Container flash-sale-flash-sale-1 Killing
+Container flash-sale-db-1 Killing
+Container flash-sale-rabbitmq-1 Killing
+Container flash-sale-flash-sale-1 Error Error while Killing
+Container flash-sale-rabbitmq-1 Error Error while Killing
+Container flash-sale-redis-1 Error Error while Killing
+Container flash-sale-db-1 Error Error while Killing
+Container flash-sale-flash-sale-1 Stopped
+Container flash-sale-redis-1 Stopping
+Container flash-sale-rabbitmq-1 Stopping
+Container flash-sale-db-1 Stopping
+Container flash-sale-rabbitmq-1 Stopped
+Container flash-sale-db-1 Stopped
+Container flash-sale-redis-1 Stopped
+
+

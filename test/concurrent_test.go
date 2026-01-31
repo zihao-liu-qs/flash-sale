@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"os"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -20,7 +21,14 @@ import (
 	"github.com/qs-lzh/flash-sale/internal/model"
 )
 
-const baseURL = "http://127.0.0.1:4000"
+func getBaseURL() string {
+	if url := os.Getenv("BASE_URL"); url != "" {
+		return url
+	}
+	return "http://localhost:4000"
+}
+
+var baseURL = getBaseURL()
 
 type ReserveRequest struct {
 	UserID     uint `json:"user_id"`
@@ -52,13 +60,17 @@ func setupTestDB(t *testing.T, userCount, showtimeCount, ticketCount int) *gorm.
 	db.Migrator().DropTable(&model.Order{}, &model.Showtime{}, &model.Movie{}, &model.User{})
 	db.Migrator().AutoMigrate(&model.User{}, &model.Movie{}, &model.Showtime{}, &model.Order{})
 
-	for i := 1; i <= userCount; i++ {
-		user := model.User{
-			Name:           fmt.Sprintf("用户%d", i),
-			HashedPassword: fmt.Sprintf("pass%d", i),
+	// 批量插入用户
+	users := make([]model.User, userCount)
+	for i := 0; i < userCount; i++ {
+		users[i] = model.User{
+			Name:           fmt.Sprintf("用户%d", i+1),
+			HashedPassword: fmt.Sprintf("pass%d", i+1),
 			Role:           model.RoleUser,
 		}
-		db.Create(&user)
+	}
+	if err := db.CreateInBatches(users, 1000).Error; err != nil {
+		t.Fatalf("Failed to create users: %v", err)
 	}
 
 	movie := model.Movie{

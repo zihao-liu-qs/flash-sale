@@ -1,0 +1,107 @@
+t%
+(base)
+flash-sale on  main [!?] via 🐹 v1.25.6
+❯ make test
+go test -v ./test/concurrent_test.go
+=== RUN   TestConcurrent_OversellPrevention
+    concurrent_test.go:104: ✅ 测试数据初始化完成: 7000个用户, 1个场次, 每场100张票
+    concurrent_test.go:250:
+        🎯 场景1: 极限抢票测试
+    concurrent_test.go:251: 票数: 100, 并发用户: 7000
+    concurrent_test.go:215:
+        ============================================================
+    concurrent_test.go:216: 📊 场景1: 超卖测试 - 测试结果
+    concurrent_test.go:217: ============================================================
+    concurrent_test.go:218: ✅ 成功预订: 100
+    concurrent_test.go:219: 🔴 已售罄: 6900
+    concurrent_test.go:220: 🔁 重复预订: 0
+    concurrent_test.go:221: ❌ 其他错误: 0
+    concurrent_test.go:222: 📈 总请求数: 7000
+    concurrent_test.go:223: ⏱️  总耗时: 1.560405667s
+    concurrent_test.go:224: ⚡ 平均响应时间: 849.666919ms
+    concurrent_test.go:225: 🚀 QPS: 4486.01
+    concurrent_test.go:226: ============================================================
+    concurrent_test.go:263: ✅ 超卖检测通过！
+订票已完成，等待3秒保证数据库写入完成
+    concurrent_test.go:236: ✅ 数据库验证通过: 100 条订单
+--- PASS: TestConcurrent_OversellPrevention (6.31s)
+=== RUN   TestConcurrent_IdempotencyCheck
+    concurrent_test.go:104: ✅ 测试数据初始化完成: 10个用户, 1个场次, 每场10张票
+    concurrent_test.go:288:
+        🎯 场景2: 同一用户幂等性测试
+    concurrent_test.go:289: 用户1 发起 20 个并发请求
+    concurrent_test.go:215:
+        ============================================================
+    concurrent_test.go:216: 📊 场景2: 幂等性测试 - 测试结果
+    concurrent_test.go:217: ============================================================
+    concurrent_test.go:218: ✅ 成功预订: 1
+    concurrent_test.go:219: 🔴 已售罄: 0
+    concurrent_test.go:220: 🔁 重复预订: 19
+    concurrent_test.go:221: ❌ 其他错误: 0
+    concurrent_test.go:222: 📈 总请求数: 20
+    concurrent_test.go:223: ⏱️  总耗时: 49.736333ms
+    concurrent_test.go:224: ⚡ 平均响应时间: 41.748837ms
+    concurrent_test.go:225: 🚀 QPS: 402.12
+    concurrent_test.go:226: ============================================================
+    concurrent_test.go:301: ✅ 幂等性检测通过！
+订票已完成，等待3秒保证数据库写入完成
+    concurrent_test.go:236: ✅ 数据库验证通过: 1 条订单
+--- PASS: TestConcurrent_IdempotencyCheck (4.36s)
+=== RUN   TestConcurrent_MultipleShowtimes
+    concurrent_test.go:104: ✅ 测试数据初始化完成: 3000个用户, 3个场次, 每场50张票
+    concurrent_test.go:325:
+        🎯 场景3: 多场次混合测试
+    concurrent_test.go:326: 3个场次, 每场50张票, 总并发: 3000
+订票已完成，等待3秒保证数据库写入完成
+    concurrent_test.go:215:
+        ============================================================
+    concurrent_test.go:216: 📊 场景3-场次1 - 测试结果
+    concurrent_test.go:217: ============================================================
+    concurrent_test.go:218: ✅ 成功预订: 50
+    concurrent_test.go:219: 🔴 已售罄: 950
+    concurrent_test.go:220: 🔁 重复预订: 0
+    concurrent_test.go:221: ❌ 其他错误: 0
+    concurrent_test.go:222: 📈 总请求数: 1000
+    concurrent_test.go:223: ⏱️  总耗时: 606.372625ms
+    concurrent_test.go:224: ⚡ 平均响应时间: 288.404285ms
+    concurrent_test.go:225: 🚀 QPS: 1649.15
+    concurrent_test.go:226: ============================================================
+    concurrent_test.go:236: ✅ 数据库验证通过: 50 条订单
+    concurrent_test.go:215:
+        ============================================================
+    concurrent_test.go:216: 📊 场景3-场次2 - 测试结果
+    concurrent_test.go:217: ============================================================
+    concurrent_test.go:218: ✅ 成功预订: 50
+    concurrent_test.go:219: 🔴 已售罄: 950
+    concurrent_test.go:220: 🔁 重复预订: 0
+    concurrent_test.go:221: ❌ 其他错误: 0
+    concurrent_test.go:222: 📈 总请求数: 1000
+    concurrent_test.go:223: ⏱️  总耗时: 591.847625ms
+    concurrent_test.go:224: ⚡ 平均响应时间: 406.865622ms
+    concurrent_test.go:225: 🚀 QPS: 1689.62
+    concurrent_test.go:226: ============================================================
+    concurrent_test.go:236: ✅ 数据库验证通过: 50 条订单
+    concurrent_test.go:215:
+        ============================================================
+    concurrent_test.go:216: 📊 场景3-场次3 - 测试结果
+    concurrent_test.go:217: ============================================================
+    concurrent_test.go:218: ✅ 成功预订: 50
+    concurrent_test.go:219: 🔴 已售罄: 950
+    concurrent_test.go:220: 🔁 重复预订: 0
+    concurrent_test.go:221: ❌ 其他错误: 0
+    concurrent_test.go:222: 📈 总请求数: 1000
+    concurrent_test.go:223: ⏱️  总耗时: 542.95925ms
+    concurrent_test.go:224: ⚡ 平均响应时间: 183.597606ms
+    concurrent_test.go:225: 🚀 QPS: 1841.76
+    concurrent_test.go:226: ============================================================
+    concurrent_test.go:236: ✅ 数据库验证通过: 50 条订单
+    concurrent_test.go:363:
+        📊 多场次总结: 总成功预订 150 笔
+--- PASS: TestConcurrent_MultipleShowtimes (5.57s)
+PASS
+ok  	command-line-arguments	17.009s
+(base)
+flash-sale on  main [!?] via 🐹 v1.25.6 took 18s
+❯ tmux capture-pane -S - -E - -p > tmux.log
+
+
