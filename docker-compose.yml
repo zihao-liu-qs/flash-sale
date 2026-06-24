@@ -1,15 +1,18 @@
 services:
-  flash-sale:
-    build: .
+  reservation:
+    build:
+      context: .
+      dockerfile: services/reservation/Dockerfile
     ports:
       - "4000:4000"
     environment:
-      DATABASE_DSN: "host=db user=flash_sale_user password=flash-sale dbname=flash_sale_db port=5432 sslmode=disable"
+      DATABASE_DSN: "host=reservation-db user=flash_sale_user password=flash-sale dbname=reservation_db port=5432 sslmode=disable"
       ADDR: ":4000"
       CACHE_URL: "redis:6379"
       RABBIT_MQ_URL: "amqp://guest:guest@rabbitmq:5672/"
+      CONSUL_ADDR: "consul:8500"
     depends_on:
-      db:
+      reservation-db:
         condition: service_healthy
       redis:
         condition: service_healthy
@@ -17,19 +20,96 @@ services:
         condition: service_healthy
     restart: on-failure
 
+  payment:
+    build:
+      context: .
+      dockerfile: services/payment/Dockerfile
+    environment:
+      RABBIT_MQ_URL: "amqp://guest:guest@rabbitmq:5672/"
+      CONSUL_ADDR: "consul:8500"
+    depends_on:
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    restart: on-failure
 
-  db:
+  order:
+    build:
+      context: .
+      dockerfile: services/order/Dockerfile
+    environment:
+      DATABASE_DSN: "host=order-db user=flash_sale_user password=flash-sale dbname=order_db port=5432 sslmode=disable"
+      RABBIT_MQ_URL: "amqp://guest:guest@rabbitmq:5672/"
+      CONSUL_ADDR: "consul:8500"
+    depends_on:
+      order-db:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    restart: on-failure
+
+  user:
+    build:
+      context: .
+      dockerfile: services/user/Dockerfile
+    ports:
+      - "4003:4003"
+    environment:
+      USER_DATABASE_DSN: "host=user-db user=flash_sale_user password=flash-sale dbname=user_db port=5432 sslmode=disable"
+      USER_ADDR: ":4003"
+      CONSUL_ADDR: "consul:8500"
+    depends_on:
+      user-db:
+        condition: service_healthy
+    restart: on-failure
+
+  reservation-db:
     image: postgres:13
     environment:
-      POSTGRES_DB: flash_sale_db
+      POSTGRES_DB: reservation_db
       POSTGRES_USER: flash_sale_user
       POSTGRES_PASSWORD: flash-sale
     ports:
       - "5432:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - reservation_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U flash_sale_user -d flash_sale_db"]
+      test: ["CMD-SHELL", "pg_isready -U flash_sale_user -d reservation_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  order-db:
+    image: postgres:13
+    environment:
+      POSTGRES_DB: order_db
+      POSTGRES_USER: flash_sale_user
+      POSTGRES_PASSWORD: flash-sale
+    ports:
+      - "5433:5432"
+    volumes:
+      - order_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U flash_sale_user -d order_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  user-db:
+    image: postgres:13
+    environment:
+      POSTGRES_DB: user_db
+      POSTGRES_USER: flash_sale_user
+      POSTGRES_PASSWORD: flash-sale
+    ports:
+      - "5434:5432"
+    volumes:
+      - user_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U flash_sale_user -d user_db"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -61,26 +141,14 @@ services:
       retries: 5
     restart: unless-stopped
 
-  test:
-    build:
-      context: .
-      dockerfile: Dockerfile.test
-    environment:
-      DATABASE_DSN: "host=db user=flash_sale_user password=flash-sale dbname=flash_sale_db port=5432 sslmode=disable"
-      CACHE_URL: "redis:6379"
-      BASE_URL: "http://flash-sale:4000"
-    depends_on:
-      flash-sale:
-        condition: service_started
-      db:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-      rabbitmq:
-        condition: service_healthy
-    profiles:
-      - test
-
+  consul:
+    image: consul:1.15
+    ports:
+      - "8500:8500"
+    command: agent -dev -client=0.0.0.0
+    restart: unless-stopped
 
 volumes:
-  postgres_data:
+  reservation_data:
+  order_data:
+  user_data:

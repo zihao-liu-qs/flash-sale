@@ -1,0 +1,88 @@
+basePath: /
+definitions:
+  handler.ErrorResponse:
+    properties:
+      detail:
+        type: string
+      error:
+        type: string
+      message:
+        type: string
+    type: object
+  handler.ReserveRequest:
+    properties:
+      showtime_id:
+        example: 1
+        type: integer
+      user_id:
+        example: 1
+        type: integer
+    type: object
+  handler.ReserveResponse:
+    properties:
+      message:
+        type: string
+      note:
+        type: string
+      reservation_id:
+        type: integer
+      status:
+        type: string
+    type: object
+host: localhost:4000
+info:
+  contact: {}
+  description: Flash sale microservice API documentation
+  title: Flash Sale API
+  version: "1.0"
+paths:
+  /reserve:
+    post:
+      consumes:
+      - application/json
+      description: Reserve a ticket for a showtime. Requires Bearer token.
+      parameters:
+      - description: Reservation request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.ReserveRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.ReserveResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "429":
+          description: Too Many Requests
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "503":
+          description: Service Unavailable
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Reserve a ticket
+      tags:
+      - reservation
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

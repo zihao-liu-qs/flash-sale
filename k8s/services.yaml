@@ -1,0 +1,195 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: flash-sale-env
+  namespace: flash-sale
+data:
+  CACHE_URL: "redis:6379"
+  RABBIT_MQ_URL: "amqp://guest:guest@rabbitmq:5672/"
+  USER_ADDR: ":4003"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: reservation
+  namespace: flash-sale
+spec:
+  selector:
+    app: reservation
+  ports:
+    - port: 4000
+      targetPort: 4000
+  type: NodePort
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: reservation
+  namespace: flash-sale
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: reservation
+  template:
+    metadata:
+      labels:
+        app: reservation
+    spec:
+      containers:
+        - name: reservation
+          image: flash-sale/reservation:latest
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: DATABASE_DSN
+              value: "host=postgres-reservation user=flash_sale_user password=flash-sale dbname=reservation_db port=5432 sslmode=disable"
+            - name: ADDR
+              value: ":4000"
+            - name: CACHE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: flash-sale-env
+                  key: CACHE_URL
+            - name: RABBIT_MQ_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: flash-sale-env
+                  key: RABBIT_MQ_URL
+          ports:
+            - containerPort: 4000
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: payment
+  namespace: flash-sale
+spec:
+  selector:
+    app: payment
+  ports:
+    - port: 4001
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: payment
+  namespace: flash-sale
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: payment
+  template:
+    metadata:
+      labels:
+        app: payment
+    spec:
+      containers:
+        - name: payment
+          image: flash-sale/payment:latest
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: CACHE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: flash-sale-env
+                  key: CACHE_URL
+            - name: RABBIT_MQ_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: flash-sale-env
+                  key: RABBIT_MQ_URL
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: order
+  namespace: flash-sale
+spec:
+  selector:
+    app: order
+  ports:
+    - port: 4002
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: order
+  namespace: flash-sale
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: order
+  template:
+    metadata:
+      labels:
+        app: order
+    spec:
+      containers:
+        - name: order
+          image: flash-sale/order:latest
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: DATABASE_DSN
+              value: "host=postgres-order user=flash_sale_user password=flash-sale dbname=order_db port=5432 sslmode=disable"
+            - name: CACHE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: flash-sale-env
+                  key: CACHE_URL
+            - name: RABBIT_MQ_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: flash-sale-env
+                  key: RABBIT_MQ_URL
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: user
+  namespace: flash-sale
+spec:
+  selector:
+    app: user
+  ports:
+    - port: 4003
+      targetPort: 4003
+  type: NodePort
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: user
+  namespace: flash-sale
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: user
+  template:
+    metadata:
+      labels:
+        app: user
+    spec:
+      containers:
+        - name: user
+          image: flash-sale/user:latest
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: USER_DATABASE_DSN
+              value: "host=postgres-user user=flash_sale_user password=flash-sale dbname=user_db port=5432 sslmode=disable"
+            - name: USER_ADDR
+              valueFrom:
+                configMapKeyRef:
+                  name: flash-sale-env
+                  key: USER_ADDR

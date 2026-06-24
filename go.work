@@ -1,0 +1,10 @@
+go 1.26
+
+use (
+	./pkg
+	./services/order
+	./services/payment
+	./services/reservation
+	./services/user
+	./test
+)

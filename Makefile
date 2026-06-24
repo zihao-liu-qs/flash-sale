@@ -1,7 +1,13 @@
-.PHONY: run test
+.PHONY: run-reservation run-payment run-order test
 
-run:
-	go run ./cmd/flash-sale/main.go
+run-reservation:
+	go run ./services/reservation/cmd/main.go
+
+run-payment:
+	go run ./services/payment/cmd/main.go
+
+run-order:
+	go run ./services/order/cmd/main.go
 
 test:
 	go test -v ./test/concurrent_test.go

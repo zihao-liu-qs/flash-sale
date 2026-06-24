@@ -1,0 +1,56 @@
+_format_version: "3.0"
+
+# Kong API Gateway declarative configuration for Flash Sale
+
+services:
+  - name: reservation
+    url: http://reservation:4000
+    routes:
+      - name: reservation-api
+        paths:
+          - /reserve
+      - name: reservation-meta
+        paths:
+          - /health
+          - /ready
+          - /metrics
+          - /swagger
+
+  - name: user
+    url: http://user:4003
+    routes:
+      - name: user-api
+        paths:
+          - /register
+          - /login
+      - name: user-health
+        paths:
+          - /user/health
+        strip_path: true
+
+  - name: payment
+    url: http://payment:4001
+    routes:
+      - name: payment-meta
+        paths:
+          - /payment/health
+          - /payment/ready
+          - /payment/metrics
+        strip_path: false
+
+  - name: order
+    url: http://order:4002
+    routes:
+      - name: order-meta
+        paths:
+          - /order/health
+          - /order/ready
+          - /order/metrics
+        strip_path: false
+
+plugins:
+  - name: rate-limiting
+    service: reservation
+    config:
+      minute: 600000
+      policy: local
