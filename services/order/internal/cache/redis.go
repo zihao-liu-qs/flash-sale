@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	pkgcache "github.com/qs-lzh/flash-sale/pkg/cache"
+	"github.com/redis/go-redis/v9"
 )
 
 type RedisCache struct {

@@ -372,13 +372,87 @@ if consulClient != nil {
 
 注意 `if consulClient != nil` — 如果没设 `CONSUL_ADDR` 环境变量，Consul 集成就跳过，不影响开发环境。
 
+#### 注册生命周期：IP 变了怎么办
+
+一个关键问题：**注册时填的健康检查地址包含了 IP，IP 是会变的，Consul 怎么知道新地址？**
+
+答案是：**每轮启动→注册用的都是当时的 IP，不是 Consul 去找服务，而是服务主动找 Consul。**
+
+```
+服务 → Consul（注册）:  POST http://consul:8500/v1/agent/service/register
+                            ↑ Consul 地址固定，配置在 env 里
+
+Consul → 服务（健康检查）:  GET http://<服务IP>:<端口>/health
+                                 ↑ 这个地址是服务注册时自己报给 Consul 的
+```
+
+以 K8s 场景为例：
+
+```
+时刻 T0: Pod 启动在 Node-A，IP = 10.0.0.5
+    │
+    ▼
+  服务调用 Consul API 注册:
+    { name: "reservation", address: "10.0.0.5", port: 4000,
+      health: "http://10.0.0.5:4000/health" }
+           ↑ 本次启动的 IP
+
+时刻 T1~T9: Consul 每 10s 去 GET http://10.0.0.5:4000/health → OK
+
+时刻 T10: Pod 挂了，K8s 在 Node-B 重建，新 IP = 10.0.0.12
+    │
+    ▼
+  新 Pod 启动，服务又调用 Consul API 注册:
+    { name: "reservation", address: "10.0.0.12", port: 4000,
+      health: "http://10.0.0.12:4000/health" }
+           ↑ 这次启动的新 IP
+
+同时:
+  旧地址 10.0.0.5 的 /health 没人响应了
+  → 连续 3 次失败 → 30s 后 Consul 自动摘除旧记录
+```
+
+#### 旧记录的两种清理路径
+
+**路径一：正常退出 → 即时清理**
+
+```go
+// services/reservation/cmd/main.go
+consulReg, _ = discovery.Register(consulClient, "reservation", ...)
+defer consulReg.Deregister()  // ← Ctrl+C 或 K8s SIGTERM 时立刻执行
+```
+
+Pod 被正常终止时（滚动更新、缩容），K8s 先发 SIGTERM，服务优雅关闭，`defer` 执行 `Deregister()`——Consul 立刻删掉这条注册记录。**不需要等 30s。**
+
+**路径二：进程崩溃 → 等 30s**
+
+进程直接挂了（OOM、panic），`defer` 没机会执行。这时才依赖健康检查——Consul 发现 `/health` 不通，连续失败 30s 后自动摘除。**这是兜底机制，不是主路径。**
+
+```
+正常退出:   0 秒即刻清理（Deregister）
+进程崩溃:   最多 30 秒自动摘除（健康检查兜底）
+```
+
+另外，为什么不直接"注册新的覆盖旧的"？因为 **ID 不同**。每次注册用的 ID 包含了 IP：
+
+```go
+ID: fmt.Sprintf("%s-%s-%d", name, addr, port)
+//   "reservation-10.0.0.5-4000"   ← 旧实例
+//   "reservation-10.0.0.12-4000"  ← 新实例，不同 ID
+```
+
+Consul 把它们当两个不同的服务实例。这其实是正确的行为——新旧两个 Pod 短暂共存时（滚动更新），Consul 里两个都可用，流量平滑切换。旧 Pod 被杀死后，graceful shutdown 的 `Deregister()` 立即清理，没有 30s 等待。
+
 #### 关键设计点
 
 | 决策 | 原因 |
 |------|------|
+| 服务主动注册，不是 Consul 发现 | 服务知道自己 IP，启动时主动报到；Consul 不需要猜测 |
+| Consul 地址固定 | 通过环境变量 `CONSUL_ADDR` 配置，是 DNS 名或固定 IP |
 | 可选集成 | 开发时不需要起个 Consul，`CONSUL_ADDR` 不设就跳过 |
-| defer Deregister | 保证 Ctrl+C 退出时清理注册信息 |
+| defer Deregister | 保证 Ctrl+C 退出时清理注册信息，O 延时 |
 | 健康检查 30s 摘除 | 如果进程崩溃（没有 graceful shutdown），Consul 自动将它踢出 |
+| ID 含 IP 而不覆盖 | 新旧两个 Pod 短暂共存时，Consul 里两个都可用，流量平滑切换 |
 | 用 `/health` 而不是 `/ready` | health 表示进程活着，ready 表示依赖就绪。Consul 关心"活着" |
 
 ---
