@@ -781,6 +781,7 @@ func MetricsMiddleware() gin.HandlerFunc {
     }
 }
 ```
+jkfdlsaj
 
 **MQ 消费指标**在业务处理中：
 
