@@ -10,6 +10,50 @@
 - 消息队列 rabbitMQ
 - 容器  Docker 并用docker compose多容器管理
 
+## 系统架构
+
+```mermaid
+flowchart LR
+    U["客户端<br/>7000+ 并发请求"] -->|"POST /reserve"| H["Gin Handler"]
+
+    subgraph GoSvc["Go 服务"]
+        H --> RW["ReservationWorkflow"]
+        PW["PaymentWorkflow<br/>（模拟支付）"]
+        OW["OrderWorkflow"]
+    end
+
+    RW -->|"Lua 原子脚本<br/>幂等检查+扣库存+生成订单ID"| R[("Redis<br/>下单判断唯一数据源")]
+    RW -->|"① 即时消息"| Q1["支付队列"]
+    RW -->|"② 延时消息"| Q2["延时队列<br/>TTL 15min"]
+
+    subgraph MQ["RabbitMQ"]
+        Q1 --> PW
+        Q2 -->|"过期→死信"| X["DLX 死信交换机"]
+        X --> Q3["超时队列"]
+        Q3 --> PW
+        PW --> Q4["订单入库队列"]
+        Q4 --> OW
+    end
+
+    PW -->|"MarkPaid（Lua）<br/>RESERVED→PAID"| R
+    PW -->|"MarkTimeout（Lua）<br/>RESERVED→TIMEOUT<br/>INCR 回滚库存"| R
+    OW -->|"读取 reservation"| R
+    OW -->|"GORM 事务<br/>主键查重幂等"| PG[("PostgreSQL<br/>订单落盘")]
+```
+
+### 订单状态机
+
+```mermaid
+stateDiagram-v2
+    [*] --> RESERVED: Lua 脚本原子创建
+    RESERVED --> PAID: 支付成功（Lua 校验状态）
+    RESERVED --> TIMEOUT: 15 分钟超时（Lua 校验状态）
+    PAID --> [*]: 异步写入 PostgreSQL
+    TIMEOUT --> [*]: INCR 回滚库存
+```
+
+两个 Lua 脚本均先校验状态为 `RESERVED` 才允许流转，保证「支付成功」与「超时取消」并发到达时只有先到者生效，状态单向流转不可逆。
+
 ## 项目设计
 
 ### 优先响应用户的订票请求
@@ -37,6 +81,79 @@ Redis用lua脚本， Postgresql使用GORM提供的Transaction
 ### Layers:
 
 model - repositorty - domain service - workflow service - app - handler
+
+## 架构分析
+
+### 核心思路：Redis 前置拦截 + MQ 异步解耦 + DB 最终落盘
+
+系统整体为三段式结构：用户请求只访问 Redis（Lua 原子判单），支付与入库全部异步化，依靠状态机与多级幂等保证不超卖、不重复购买、不丢单。
+
+关键路径上唯一的操作是一个 Redis Lua 脚本，全程不访问数据库，一次原子执行完成 6 个动作：
+
+1. 检查用户是否已订该场次
+2. 检查余票
+3. `DECR` 扣库存
+4. `INCR` 生成订单号
+5. `HSET` 写入 RESERVED 状态订单
+6. `SET` 用户已订标记
+
+随后发送两条 MQ 消息（即时支付消息 + 15 分钟延时消息）并立即返回响应。
+
+### 分层职责
+
+| 层 | 位置 | 职责 |
+|---|---|---|
+| model | internal/model/ | User / Movie / Showtime / Order 四张表 |
+| repository | internal/repository/ | GORM 数据访问，接口化（OrderRepo interface + WithTx） |
+| domain service | internal/service/domain/ | 纯业务逻辑，不感知 MQ（直接调 Redis/DB） |
+| workflow service | internal/service/workflow/ | 组合 domain 服务 + MQ 收发，承载异步编排 |
+| app | internal/app/ | 依赖注入，启动时初始化库存与队列 |
+| handler | internal/handler/ | HTTP 入口，错误码映射 |
+
+domain 与 workflow 的拆分让核心一致性逻辑（Lua、事务）可以脱离 MQ 单独理解和测试。
+
+### 核心设计决策
+
+#### 1. Lua 脚本将判单收敛为一个原子操作
+
+`reserveTicketScript` 一次性完成「查已订 → 查余票 → 扣库存 → 生成订单号 → 写订单 → 标记已订」。Lua 在 Redis 单线程上原子执行，7000 并发打到同一个 key 上也是串行判单——不需要分布式锁，也不需要数据库行锁。这是本机 QPS 能达到 2 万的原因：热路径上没有任何数据库访问。
+
+#### 2. 状态机单向流转，解决「支付 vs 超时」竞态
+
+`markTicketAsPaidScript` 与 `markTicketAsTimeoutScript` 都以 `status == "RESERVED"` 为前置条件。当支付成功与超时取消并发到达时（秒杀系统的经典竞态），只有先到者能翻转状态，后到者被拒绝。状态不可逆，因此不会出现「库存已回滚但订单却是已支付」的不一致局面。
+
+#### 3. TTL + DLX 延时队列实现定时取消
+
+利用 RabbitMQ 原生 `x-message-ttl`（15 分钟）与死信交换机实现延迟任务：消息过期后自动路由到超时队列触发取消，无需自己实现定时轮询扫描器。
+
+#### 4. 多级幂等：Redis 订单号直接作为 DB 主键
+
+`Order.ID` 关闭自增（`autoIncrement:false`），直接使用 Redis `INCR reservation:id:seq` 生成的 ID：
+
+- 落库前 `GetByID` 查重，重复消费直接返回成功
+- 即使查重失效，主键冲突也会让事务失败兜底
+
+MQ 是 at-least-once 投递，该设计使重复消息无害化。
+
+### 一致性策略
+
+| 一致性维度 | 机制 |
+|---|---|
+| 不超卖 | Lua 原子 DECR，判单不碰 DB |
+| 不重复购买 | `user:{id}:showtime:{id}:ordered` 键（Lua 内检查+设置） |
+| 支付/超时竞态 | 状态机前置校验，先到者赢 |
+| Redis ↔ DB 最终一致 | 订单号同源（Redis seq = DB 主键）+ 消费幂等 |
+| 超时释放库存 | TIMEOUT 与 INCR 库存在 Lua 中原子绑定 |
+
+### 已知权衡与局限
+
+1. **启动即清场**：启动时 `DropTable` + `FlushDB` + `QueuePurge`，服务重启即全量数据丢失。作为学习/演示项目可以接受，但意味着崩溃时已支付未落库的订单会丢失。
+2. **超时后不能重新购买**：超时脚本只回滚库存，不删除用户已订标记，用户超时未支付后将无法再次购买该场次（真实业务通常允许重新购买）。
+3. **消费者并发无上限**：支付消费者对每个消息启动一个新 goroutine，没有 prefetch 限流与固定 worker 池，洪峰时 goroutine 会大量堆积。
+4. **失败重试无上限**：`Nack` requeue 没有重试次数限制与死信兜底，持续失败的消息会无限重投。
+5. **库存硬编码**：启动时每个场次固定写入 100 张票，而非读取数据库中的真实座位数。
+
+这些局限也是从 demo 走向生产系统时下一步要解决的问题。
 
 ## 文件树
 

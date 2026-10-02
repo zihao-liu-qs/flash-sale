@@ -1,0 +1,462 @@
+<title>Flash-Sale 架构</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #F4F5F2;
+    --surface: #FFFFFF;
+    --ink: #1B1E23;
+    --muted: #5C646C;
+    --line: #E3E5E0;
+    --accent: #E2471F;
+    --accent-ink: #B8381A;
+    --canvas: #FBFBF9;
+    --canvas-line: #E9E9E4;
+    --chip-bg: #ECEEE9;
+    --go: #0E8C8C;
+    --redis: #C22E2E;
+    --mq: #D9822B;
+    --pg: #33658A;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #15181B;
+      --surface: #1D2126;
+      --ink: #E7EAEC;
+      --muted: #9AA4AD;
+      --line: #2C3138;
+      --accent: #FF6A3D;
+      --accent-ink: #FF8A63;
+      --canvas: #FBFBF9;
+      --canvas-line: #E9E9E4;
+      --chip-bg: #262B31;
+      --go: #3FB7B7;
+      --redis: #E05555;
+      --mq: #EBA04A;
+      --pg: #5C8FB8;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #15181B;
+    --surface: #1D2126;
+    --ink: #E7EAEC;
+    --muted: #9AA4AD;
+    --line: #2C3138;
+    --accent: #FF6A3D;
+    --accent-ink: #FF8A63;
+    --canvas: #FBFBF9;
+    --canvas-line: #E9E9E4;
+    --chip-bg: #262B31;
+    --go: #3FB7B7;
+    --redis: #E05555;
+    --mq: #EBA04A;
+    --pg: #5C8FB8;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    margin: 0; overflow: hidden;
+    background: var(--bg); color: var(--ink);
+    font-family: "IBM Plex Sans", system-ui, -apple-system, sans-serif;
+    line-height: 1.6; font-size: 16px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .deck { height: 100%; overflow: hidden; position: relative; }
+  .slides { display: flex; width: 100%; height: 100%; transition: transform .45s cubic-bezier(.4,0,.2,1); will-change: transform; }
+  .slide { flex: 0 0 100%; width: 100%; height: 100%; overflow-y: auto; scrollbar-width: thin; }
+  .slide-inner {
+    max-width: 980px; margin: 0 auto;
+    padding: clamp(28px, 6vh, 64px) 24px 120px;
+    min-height: 100%;
+    display: flex; flex-direction: column;
+  }
+  .slide.cover .slide-inner { justify-content: center; }
+
+  .eyebrow {
+    font-family: "IBM Plex Mono", monospace; font-size: 0.74rem; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--accent); margin: 0 0 14px;
+  }
+  h1 {
+    font-family: "Sora", sans-serif; font-weight: 700; font-size: clamp(2rem, 6vw, 3.4rem);
+    line-height: 1.06; letter-spacing: -0.02em; margin: 0 0 18px; text-wrap: balance;
+  }
+  h2 {
+    font-family: "Sora", sans-serif; font-weight: 600; font-size: clamp(1.35rem, 3.4vw, 1.7rem);
+    letter-spacing: -0.01em; margin: 0 0 8px; text-wrap: balance;
+  }
+  .thesis { font-size: 1.08rem; color: var(--muted); max-width: 60ch; margin: 0 0 26px; text-wrap: pretty; }
+  .thesis b, .lead b { color: var(--ink); font-weight: 600; }
+  .lead { color: var(--muted); margin: 4px 0 18px; max-width: 72ch; font-size: 0.98rem; }
+
+  .stats { display: flex; gap: 12px; flex-wrap: wrap; }
+  .stat { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px 22px; min-width: 128px; }
+  .stat-n { display: block; font-family: "Sora", sans-serif; font-weight: 700; font-size: 1.75rem; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+  .stat-l { font-family: "IBM Plex Mono", monospace; font-size: 0.72rem; color: var(--muted); letter-spacing: 0.05em; }
+
+  .diagram {
+    background: var(--canvas); color: #1B1E23;
+    border: 1px solid var(--canvas-line); border-radius: 14px;
+    padding: 22px 20px; overflow-x: auto; margin: 0 0 16px;
+  }
+  .diagram pre { margin: 0; }
+  .diagram svg { max-width: 100%; height: auto; }
+
+  .point {
+    background: var(--surface); border: 1px solid var(--line);
+    border-left: 3px solid var(--accent); border-radius: 10px;
+    padding: 12px 16px; font-size: 0.92rem;
+  }
+  .point b { font-family: "IBM Plex Mono", monospace; font-size: 0.72rem; letter-spacing: 0.06em; color: var(--accent); text-transform: uppercase; margin-right: 8px; }
+
+  table { border-collapse: collapse; width: 100%; font-size: 0.9rem; font-variant-numeric: tabular-nums; }
+  .table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 12px; }
+  th, td { text-align: left; padding: 9px 14px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+  thead th { font-family: "IBM Plex Mono", monospace; font-size: 0.7rem; letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted); background: var(--chip-bg); }
+  tbody tr:last-child td { border-bottom: none; }
+
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+  .chip { font-family: "IBM Plex Mono", monospace; font-size: 0.74rem; padding: 5px 12px; border-radius: 6px; background: var(--chip-bg); color: var(--ink); letter-spacing: 0.02em; }
+  .legend { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 20px; }
+  .lg { display: inline-flex; align-items: center; gap: 7px; font-family: "IBM Plex Mono", monospace; font-size: 0.74rem; color: var(--muted); }
+  .lg i { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+  .muted-note { color: var(--muted); font-size: 0.88rem; margin-top: 12px; }
+
+  /* progress bar */
+  .progress { position: fixed; top: env(safe-area-inset-top, 0px); left: 0; right: 0; height: 3px; background: transparent; z-index: 30; }
+  .progress #bar { display: block; height: 100%; width: 0; background: var(--accent); transition: width .35s ease; }
+
+  /* controls */
+  .controls {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 30;
+    display: flex; align-items: center; justify-content: center; gap: 20px;
+    padding: 16px 20px calc(16px + env(safe-area-inset-bottom, 0px));
+    background: linear-gradient(transparent, color-mix(in srgb, var(--bg) 92%, transparent));
+  }
+  .counter { font-family: "IBM Plex Mono", monospace; font-size: 0.76rem; color: var(--muted); letter-spacing: 0.08em; min-width: 64px; text-align: center; font-variant-numeric: tabular-nums; }
+  .dots { display: flex; gap: 8px; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; border: none; padding: 0; background: var(--line); cursor: pointer; transition: background .2s, transform .2s; }
+  .dot.on { background: var(--accent); transform: scale(1.3); }
+  .nav { display: flex; gap: 8px; }
+  .nav-btn {
+    width: 42px; height: 42px; border-radius: 50%;
+    border: 1px solid var(--line); background: var(--surface); color: var(--ink);
+    font-size: 1.1rem; cursor: pointer; display: inline-flex; align-items: center; justify-content: center;
+    transition: border-color .15s, color .15s, opacity .15s;
+  }
+  .nav-btn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+  .nav-btn:disabled { opacity: .35; cursor: default; }
+  .nav-btn:focus-visible, .dot:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  @media (max-width: 520px) {
+    .slide-inner { padding: 20px 18px 110px; }
+    .stat { min-width: 100px; flex: 1 1 0; }
+    .controls { gap: 14px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .slides { transition: none; }
+    .progress #bar { transition: none; }
+  }
+</style>
+
+<div class="deck">
+  <div class="slides">
+
+    <!-- 封面 -->
+    <section class="slide cover">
+      <div class="slide-inner">
+        <p class="eyebrow">并发抢票系统 · 架构图解</p>
+        <h1>一段 Lua，扛住 7000 并发</h1>
+        <p class="thesis">用户请求<b>只访问 Redis</b>，一次 Lua 脚本原子完成判单；支付与入库全部<b>交给 RabbitMQ 异步</b>，最终<b>落入 PostgreSQL</b>。正确性靠状态机与多级幂等，可靠性靠三层防御。</p>
+        <div class="stats">
+          <div class="stat"><span class="stat-n">7000</span><span class="stat-l">并发请求</span></div>
+          <div class="stat"><span class="stat-n">20573</span><span class="stat-l">本机 QPS</span></div>
+          <div class="stat"><span class="stat-n">0</span><span class="stat-l">超卖</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 01 系统总览 -->
+    <section class="slide">
+      <div class="slide-inner">
+        <p class="eyebrow">01 / 07 · 系统总览</p>
+        <h2>系统总览</h2>
+        <p class="lead">三段式：<b>Redis 前置拦截</b> + <b>MQ 异步解耦</b> + <b>DB 最终落盘</b>。热路径唯一操作是一个 Lua 脚本，全程不碰数据库。</p>
+        <div class="diagram"><pre class="mermaid">
+flowchart LR
+    U["客户端 · 7000+ 并发"] -->|"POST /reserve"| H["Gin Handler"]
+
+    subgraph GO["Go 服务"]
+        H --> RW["ReservationWorkflow"]
+        PW["PaymentWorkflow"]
+        OW["OrderWorkflow"]
+        RC["ReconcileWorkflow"]
+    end
+
+    RW -->|"Lua 原子判单"| REDIS[("Redis · 唯一判单源")]
+
+    subgraph MQ["RabbitMQ"]
+        QPAY["支付队列"]
+        QDELAY["延时队列 · TTL 15min"]
+        QTO["超时队列"]
+        QORD["入库队列"]
+    end
+
+    RW -->|"即时支付消息"| QPAY
+    RW -->|"延时消息"| QDELAY
+    QDELAY -->|"过期 → 死信"| QTO
+    QPAY --> PW
+    QTO --> PW
+    PW -->|"MarkPaid"| REDIS
+    PW -->|"入库消息"| QORD
+    QORD --> OW
+    OW -->|"GORM 事务"| PG[("PostgreSQL")]
+    RC -.->|"每分钟对账"| REDIS
+    RC -.->|"补写落库"| PG
+        </pre></div>
+        <aside class="point"><b>面试要点</b>订票请求同步返回，支付/超时/入库全部异步；MQ 同时投递「即时支付」与「15 分钟超时」两条消息，超时消息过期后经死信交换进入超时队列。</aside>
+      </div>
+    </section>
+
+    <!-- 02 状态机 -->
+    <section class="slide">
+      <div class="slide-inner">
+        <p class="eyebrow">02 / 07 · 订单状态机</p>
+        <h2>订单状态机</h2>
+        <p class="lead">支付与超时两个 Lua 脚本都以 <b>status == RESERVED</b> 为前置条件——并发到达时<b>先到者赢</b>，状态单向流转不可逆。</p>
+        <div class="diagram"><pre class="mermaid">
+stateDiagram-v2
+    [*] --> RESERVED : Lua 原子创建
+    RESERVED --> PAID : 支付成功 · MarkPaid
+    RESERVED --> TIMEOUT : 15min 超时 · MarkTimeout
+    PAID --> [*] : 异步写 PostgreSQL
+    TIMEOUT --> [*] : 回滚库存 · 释放购买资格
+        </pre></div>
+        <aside class="point"><b>面试要点</b>「支付成功」与「超时取消」并发到达是秒杀系统的经典竞态；状态前置校验保证只有先到者能翻转，绝不会出现「库存已回滚、订单却已支付」。</aside>
+      </div>
+    </section>
+
+    <!-- 03 Lua 判单 -->
+    <section class="slide">
+      <div class="slide-inner">
+        <p class="eyebrow">03 / 07 · Lua 原子判单</p>
+        <h2>Lua 原子判单</h2>
+        <p class="lead">一个脚本在 Redis 单线程上原子完成 6 步。7000 并发打到同一个 key 也是<b>串行判单</b>——不需要分布式锁，也不需要数据库行锁。</p>
+        <div class="diagram"><pre class="mermaid">
+flowchart TB
+    subgraph REQ["7000 并发请求"]
+        U1["用户 A"]
+        U2["用户 B"]
+        U3["用户 C …"]
+    end
+
+    subgraph LUA["Redis 单线程 · 一个 Lua 脚本原子执行 6 步"]
+        direction TB
+        S1["① 查已订 · GET ordered"]
+        S2["② 查余票 · GET remain"]
+        S3["③ 扣库存 · DECR remain"]
+        S4["④ 生成订单号 · INCR seq"]
+        S5["⑤ 写订单 · HSET reservation"]
+        S6["⑥ 标记已订 · SET ordered"]
+        S1 --> S2 --> S3 --> S4 --> S5 --> S6
+    end
+
+    REQ --> LUA
+    S6 -->|"返回 订单号 / 售罄 / 已订"| RES["立即响应 · 零 DB 访问"]
+        </pre></div>
+        <aside class="point"><b>面试要点</b>6 步合并在一次原子执行里，中间不会暴露「读到有余票、写入时已无票」的中间态；热路径零 DB 访问，是本机 QPS 2 万的根本原因。</aside>
+      </div>
+    </section>
+
+    <!-- 04 三层防御 -->
+    <section class="slide">
+      <div class="slide-inner">
+        <p class="eyebrow">04 / 07 · 三层可靠投递</p>
+        <h2>三层可靠投递</h2>
+        <p class="lead">每一层有自己的失败模式，所以<b>不能只靠一层</b>；而每一层的设计又倒逼出下一层的需求。</p>
+        <div class="diagram"><pre class="mermaid">
+flowchart TB
+    subgraph L1["第一层 · 预防 —— 让失败可感知、可撤销"]
+        C1["消息发送失败"] --> M1["confirm + Lua 原子回滚"]
+    end
+    subgraph L2["第二层 · 遏制 —— 让失败不扩散"]
+        C2["消费失败 · 重复投递"] --> M2["幂等消费 + 有限重试 + 停车场"]
+    end
+    subgraph L3["第三层 · 兜底 —— 让漏网之鱼自愈"]
+        C3["消息彻底丢失 · MQ 故障"] --> M3["定时对账 · 不走 MQ"]
+    end
+    L1 -->|"防不住"| L2 -->|"防不住"| L3
+        </pre></div>
+        <aside class="point"><b>面试要点</b><b>预防</b>：publisher confirm 让发送失败可感知，失败即 Lua 原子回滚（删单·还票·释放资格）。<b>遏制</b>：at-least-once 下幂等是消费者的义务，坏消息有限重试后进停车场。<b>兜底</b>：独立于 MQ 的定时对账，扫 Redis 补写/超时，自愈到最终一致。</aside>
+      </div>
+    </section>
+
+    <!-- 05 重试拓扑 -->
+    <section class="slide">
+      <div class="slide-inner">
+        <p class="eyebrow">05 / 07 · 重试拓扑</p>
+        <h2>RabbitMQ 重试拓扑</h2>
+        <p class="lead">坏消息不无限 requeue：走 retry 队列 <b>TTL 退避</b>，broker 自动维护的 <b>x-death 计数</b>满 3 次进停车场。</p>
+        <div class="diagram"><pre class="mermaid">
+flowchart LR
+    MAIN["主队列 main"] -->|"Nack · 未满 3 次"| RX["Retry 交换机"]
+    RX --> RQ["Retry 队列 · TTL 10s"]
+    RQ -->|"过期 → 死信"| MAIN
+    MAIN -->|"x-death 已满 3 次"| PARK["停车场队列 · 人工处理"]
+        </pre></div>
+        <aside class="point"><b>面试要点</b>TTL 天然就是退避；x-death 是 broker 写进消息头的死信历史（零额外状态）。该拓扑对支付/超时/入库三条队列都生效，坏消息既不空转、也不丢失。</aside>
+      </div>
+    </section>
+
+    <!-- 06 分层 -->
+    <section class="slide">
+      <div class="slide-inner">
+        <p class="eyebrow">06 / 07 · 分层架构</p>
+        <h2>分层架构</h2>
+        <p class="lead"><b>domain</b> 不感知 MQ（纯业务、可单测），<b>workflow</b> 组合 domain + MQ 做异步编排。实线 = 调用，虚线 = 依赖注入装配。</p>
+        <div class="diagram"><pre class="mermaid">
+flowchart TB
+    H["handler"] --> W["workflow · 编排 MQ"]
+    W --> D["domain · 纯业务"]
+    D --> R["repository"]
+    R --> M["model"]
+
+    A["app · 依赖注入"] -.->|装配| W
+    A -.->|装配| D
+
+    W -->|MQ 消息| MQ[("RabbitMQ")]
+    D -->|Lua 原子| CACHE[("Redis")]
+    R -->|GORM 事务| DB[("PostgreSQL")]
+        </pre></div>
+        <aside class="point"><b>面试要点</b>把核心一致性逻辑（Lua、GORM 事务）放进 domain，与 MQ 解耦，可脱离消息队列单独理解与测试；workflow 只负责编排收发。</aside>
+      </div>
+    </section>
+
+    <!-- 07 部署与压测 -->
+    <section class="slide">
+      <div class="slide-inner">
+        <p class="eyebrow">07 / 07 · 部署与压测</p>
+        <h2>部署与压测数据</h2>
+        <p class="lead">Docker Compose 编排 4 个容器，各自带健康检查；三个场景的压测验证了正确性与性能。</p>
+        <div class="diagram"><pre class="mermaid">
+flowchart TB
+    subgraph COMPOSE["docker compose"]
+        FS["flash-sale · Go 服务 · :4000 / :6060"]
+        PG[("postgres:13 · :5432")]
+        RD[("redis:6.2 · :6379")]
+        MQ[("rabbitmq:3.9 · :5672 / :15672")]
+    end
+    FS --- PG
+    FS --- RD
+    FS --- MQ
+    CL["客户端 / 压测"] -->|"HTTP :4000"| FS
+        </pre></div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>压测场景</th><th>本地 QPS</th><th>云主机 QPS</th><th>结果</th></tr></thead>
+            <tbody>
+              <tr><td>① 7000 用户抢 100 票</td><td>20573</td><td>4486</td><td>成功 100 / 售罄 6900 / 超卖 0</td></tr>
+              <tr><td>② 单用户 20 次并发抢同一票</td><td>10369</td><td>402</td><td>成功 1 / 重复拒绝 19</td></tr>
+              <tr><td>③ 3000 用户抢 3 场 × 50 票</td><td>~11156</td><td>~1690</td><td>每场 50 / 超卖 0</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="muted-note">云主机 QPS 显著低于本地，是因为远程部署引入了网络往返延迟。</p>
+      </div>
+    </section>
+
+    <!-- 收尾 -->
+    <section class="slide cover">
+      <div class="slide-inner">
+        <p class="eyebrow">回顾</p>
+        <h2>一个可讲透的秒杀系统</h2>
+        <p class="lead">正确性 —— 状态机 + Lua 原子判单 + 多级幂等；性能 —— 热路径零 DB 访问；可靠性 —— 三层防御，逐层递进。</p>
+        <div class="chips">
+          <span class="chip">Gin</span>
+          <span class="chip">Redis + Lua</span>
+          <span class="chip">RabbitMQ</span>
+          <span class="chip">PostgreSQL + GORM</span>
+          <span class="chip">Docker Compose</span>
+        </div>
+        <div class="legend">
+          <span class="lg"><i style="background:var(--go)"></i>Gin / Go</span>
+          <span class="lg"><i style="background:var(--redis)"></i>Redis</span>
+          <span class="lg"><i style="background:var(--mq)"></i>RabbitMQ</span>
+          <span class="lg"><i style="background:var(--pg)"></i>PostgreSQL</span>
+        </div>
+        <p class="muted-note">同一套 Mermaid 源码见 <code>docs/architecture.md</code>，可直接贴进 README 或 GitHub 渲染。</p>
+      </div>
+    </section>
+
+  </div>
+</div>
+
+<div class="progress"><span id="bar"></span></div>
+<nav class="controls" aria-label="幻灯片导航">
+  <span class="counter" id="counter">01 / 09</span>
+  <div class="dots" id="dots"></div>
+  <div class="nav">
+    <button class="nav-btn" id="prev" aria-label="上一页">←</button>
+    <button class="nav-btn" id="next" aria-label="下一页">→</button>
+  </div>
+</nav>
+
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"></script>
+<script>
+  mermaid.initialize({ startOnLoad: true, theme: "neutral", securityLevel: "loose" });
+</script>
+<script>
+  (function () {
+    var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+    var track = document.querySelector('.slides');
+    var prevBtn = document.getElementById('prev');
+    var nextBtn = document.getElementById('next');
+    var counter = document.getElementById('counter');
+    var bar = document.getElementById('bar');
+    var dotsWrap = document.getElementById('dots');
+    var i = 0, N = slides.length;
+
+    slides.forEach(function (_, idx) {
+      var b = document.createElement('button');
+      b.className = 'dot';
+      b.setAttribute('aria-label', '跳到第 ' + (idx + 1) + ' 页');
+      b.addEventListener('click', function () { go(idx); });
+      dotsWrap.appendChild(b);
+    });
+    var dots = Array.prototype.slice.call(dotsWrap.children);
+
+    function render() {
+      track.style.transform = 'translateX(-' + (i * 100) + '%)';
+      counter.textContent = pad(i + 1) + ' / ' + pad(N);
+      bar.style.width = ((i + 1) / N * 100) + '%';
+      dots.forEach(function (d, idx) { d.classList.toggle('on', idx === i); });
+      prevBtn.disabled = i === 0;
+      nextBtn.disabled = i === N - 1;
+    }
+    function pad(n) { return (n < 10 ? '0' : '') + n; }
+    function go(n) {
+      i = Math.max(0, Math.min(N - 1, n));
+      render();
+      slides[i].scrollTop = 0;
+    }
+    prevBtn.addEventListener('click', function () { go(i - 1); });
+    nextBtn.addEventListener('click', function () { go(i + 1); });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'ArrowRight' || e.key === 'PageDown') { e.preventDefault(); go(i + 1); }
+      else if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); go(i - 1); }
+      else if (e.key === 'Home') { e.preventDefault(); go(0); }
+      else if (e.key === 'End') { e.preventDefault(); go(N - 1); }
+    });
+    var x0 = null;
+    document.addEventListener('touchstart', function (e) { x0 = e.touches[0].clientX; }, { passive: true });
+    document.addEventListener('touchend', function (e) {
+      if (x0 === null) return;
+      var dx = e.changedTouches[0].clientX - x0;
+      if (Math.abs(dx) > 50) { dx < 0 ? go(i + 1) : go(i - 1); }
+      x0 = null;
+    }, { passive: true });
+    render();
+  })();
+</script>
