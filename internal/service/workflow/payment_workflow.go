@@ -1,18 +1,29 @@
 package workflow
 
 import (
+	"context"
 	"encoding/json"
 	"log"
+	"sync"
 
+	"github.com/qs-lzh/flash-sale/internal/cache"
 	"github.com/qs-lzh/flash-sale/internal/mq"
 	"github.com/qs-lzh/flash-sale/internal/service/domain"
 
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
+// PaymentWorkflow consumes payment and timeout messages.
+//
+// publishCh/publishMu: amqp channels are not safe for concurrent use, and
+// publish confirms are matched by delivery tag, so every publish from the
+// concurrent message handlers is serialized through the mutex.
 type PaymentWorkflow struct {
 	paymentService domain.PaymentService
 	mqConn         *amqp.Connection
+
+	publishCh *amqp.Channel
+	publishMu sync.Mutex
 }
 
 func NewPaymentWorkflow(paymentService domain.PaymentService, mqConn *amqp.Connection) *PaymentWorkflow {
@@ -23,6 +34,12 @@ func NewPaymentWorkflow(paymentService domain.PaymentService, mqConn *amqp.Conne
 }
 
 func (w *PaymentWorkflow) Start(mqConn *amqp.Connection) error {
+	ch, err := mq.NewConfirmingChannel(mqConn)
+	if err != nil {
+		return err
+	}
+	w.publishCh = ch
+
 	if err := w.ConsumePaymentCreate(mqConn); err != nil {
 		return err
 	}
@@ -46,42 +63,60 @@ func (w *PaymentWorkflow) ConsumePaymentCreate(conn *amqp.Connection) error {
 
 	go func() {
 		for msg := range msgs {
-			go func() {
-				reservationID, err := w.handlePaymentMessage(msg)
-				if err != nil {
-					log.Printf("Failed to handle payment message: %v", err)
-				} else {
-					// no error means payment success,
-					// so send message to tell db to create order
-					if err := mq.SendImmediateMessage(ch, mq.PaymentToOrderImmediateQueue,
-						mq.PaymentToOrderImmediateMessage{
-							ReservationID: reservationID,
-						}); err != nil {
-						log.Printf("Failed to send message: %v", err)
-					}
-				}
-			}()
+			go w.handlePaymentMessage(msg)
 		}
 	}()
 
 	return nil
 }
 
-func (w *PaymentWorkflow) handlePaymentMessage(msg amqp.Delivery) (reservationID uint, err error) {
+// handlePaymentMessage 的顺序是关键设计（at-least-once 下的幂等消费）：
+//
+//	MarkPaid（幂等）→ 发入库消息（confirm）→ 全部成功才 Ack
+//
+// 发入库消息失败则整个支付消息走有限重试；重试时 MarkPaid 命中 PaidAlready，
+// 不会重复改状态，只是补发上次没发出去的入库消息。
+func (w *PaymentWorkflow) handlePaymentMessage(msg amqp.Delivery) {
 	var message mq.ReservationToPaymentImmediateMessage
 	if err := json.Unmarshal(msg.Body, &message); err != nil {
-		msg.Nack(false, false)
-		return 0, err
+		log.Printf("Invalid payment message (%v), routing to retry/parking", err)
+		w.retryOrPark(msg, mq.ReservationToPaymentParkingQueue)
+		return
 	}
 
-	if err := w.paymentService.StartMockPay(message.ReservationID); err != nil {
-		msg.Nack(false, true)
-		return 0, err
+	status, err := w.paymentService.StartMockPay(message.ReservationID)
+	if err != nil {
+		log.Printf("Failed to pay reservation %d: %v", message.ReservationID, err)
+		w.retryOrPark(msg, mq.ReservationToPaymentParkingQueue)
+		return
+	}
+	if status == cache.PaidNotFound {
+		// 订单已被回滚（如 confirm 回执丢失后的残留消息），直接忽略
+		msg.Ack(false)
+		return
+	}
+
+	if err := w.publishOrderCreation(message.ReservationID); err != nil {
+		log.Printf("Failed to send order-creation message for reservation %d: %v",
+			message.ReservationID, err)
+		w.retryOrPark(msg, mq.ReservationToPaymentParkingQueue)
+		return
 	}
 
 	msg.Ack(false)
+}
 
-	return message.ReservationID, nil
+func (w *PaymentWorkflow) publishOrderCreation(reservationID uint) error {
+	ctx, cancel := context.WithTimeout(context.Background(), publishConfirmTimeout)
+	defer cancel()
+
+	w.publishMu.Lock()
+	defer w.publishMu.Unlock()
+	return mq.SendImmediateMessageWithConfirm(ctx, w.publishCh,
+		mq.PaymentToOrderImmediateQueue,
+		mq.PaymentToOrderImmediateMessage{
+			ReservationID: reservationID,
+		})
 }
 
 func (w *PaymentWorkflow) ConsumePaymentTimeout(mqConn *amqp.Connection) error {
@@ -107,13 +142,25 @@ func (w *PaymentWorkflow) ConsumePaymentTimeout(mqConn *amqp.Connection) error {
 func (w *PaymentWorkflow) handlePaymentTimeout(msg amqp.Delivery) {
 	var message mq.ReservationToPaymentDelayMessage
 	if err := json.Unmarshal(msg.Body, &message); err != nil {
-		msg.Nack(false, false)
+		log.Printf("Invalid timeout message (%v), routing to retry/parking", err)
+		w.retryOrPark(msg, mq.ReservationToPaymentTimeoutParkingQueue)
 		return
 	}
 	if err := w.paymentService.MarkTimeout(message.ReservationID); err != nil {
-		msg.Nack(false, true)
+		log.Printf("Failed to mark reservation %d as timeout: %v", message.ReservationID, err)
+		w.retryOrPark(msg, mq.ReservationToPaymentTimeoutParkingQueue)
 		return
 	}
 
 	msg.Ack(false)
+}
+
+// retryOrPark routes a failed message into the bounded-retry topology, and
+// on to the parking lot once retries are exhausted.
+func (w *PaymentWorkflow) retryOrPark(msg amqp.Delivery, parkingQueue string) {
+	w.publishMu.Lock()
+	defer w.publishMu.Unlock()
+	if err := mq.NackWithRetry(msg, w.publishCh, parkingQueue, mq.MaxRetryCount); err != nil {
+		log.Printf("Failed to park message: %v", err)
+	}
 }

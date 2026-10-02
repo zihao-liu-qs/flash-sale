@@ -34,6 +34,7 @@ type App struct {
 	ReservationWorkflow *workflow.ReservationWorkflow
 	PaymentWorkflow     *workflow.PaymentWorkflow
 	OrderWorkflow       *workflow.OrderWorkflow
+	ReconcileWorkflow   *workflow.ReconcileWorkflow
 }
 
 func New(config *config.Config, db *gorm.DB, cache *cache.RedisCache, mqConn *amqp.Connection) *App {
@@ -50,6 +51,7 @@ func New(config *config.Config, db *gorm.DB, cache *cache.RedisCache, mqConn *am
 	reservationWorkflow := workflow.NewReservationWorkflow(reservationService, mqConn)
 	paymentWorkflow := workflow.NewPaymentWorkflow(paymentService, mqConn)
 	orderWorkflow := workflow.NewOrderWorkflow(cache, orderService)
+	reconcileWorkflow := workflow.NewReconcileWorkflow(cache, orderService, paymentService)
 
 	return &App{
 		Config:              config,
@@ -64,6 +66,7 @@ func New(config *config.Config, db *gorm.DB, cache *cache.RedisCache, mqConn *am
 		ReservationWorkflow: reservationWorkflow,
 		PaymentWorkflow:     paymentWorkflow,
 		OrderWorkflow:       orderWorkflow,
+		ReconcileWorkflow:   reconcileWorkflow,
 	}
 }
 
@@ -86,11 +89,14 @@ func (app *App) Init() error {
 
 	app.PaymentWorkflow.Start(app.MQConn)
 	app.OrderWorkflow.Start(app.MQConn)
+	app.ReconcileWorkflow.Start()
 
 	return nil
 }
 
 func (app *App) Close() error {
+	// 先停对账任务（可能正在读写 DB/Redis），再关 DB 连接
+	app.ReconcileWorkflow.Stop()
 	sqlDB, err := app.DB.DB()
 	if err != nil {
 		return err

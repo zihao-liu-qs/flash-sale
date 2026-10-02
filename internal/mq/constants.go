@@ -35,3 +35,31 @@ const (
 type PaymentToOrderImmediateMessage struct {
 	ReservationID uint `json:"reservation_id"`
 }
+
+// retry & parking-lot infrastructure for bounded consumer retries:
+//
+//	main queue --nack--> RetryExchange --> retry queue --TTL expires--> main queue
+//	(retries exhausted)                --> parking-lot queue (manual inspection)
+const (
+	// RetryExchange carries messages nacked by consumers to their retry queue.
+	RetryExchange = "flash-sale.retry.exchange"
+
+	// RetryTTLMs is how long a message waits in the retry queue before being
+	// redelivered to its main queue (backoff between attempts).
+	RetryTTLMs = int32(10 * 1000)
+
+	// MaxRetryCount is how many times a message is retried before being
+	// parked for manual inspection.
+	MaxRetryCount = 3
+)
+
+const (
+	ReservationToPaymentRetryQueue   = "reservation.payment.pay.retry"
+	ReservationToPaymentParkingQueue = "reservation.payment.pay.parking"
+
+	ReservationToPaymentTimeoutRetryQueue   = "reservation.payment.timeout.retry"
+	ReservationToPaymentTimeoutParkingQueue = "reservation.payment.timeout.parking"
+
+	PaymentToOrderRetryQueue   = "payment.order.create.retry"
+	PaymentToOrderParkingQueue = "payment.order.create.parking"
+)

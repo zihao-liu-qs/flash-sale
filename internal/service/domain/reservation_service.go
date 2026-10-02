@@ -8,6 +8,7 @@ import (
 
 type ReservationService interface {
 	Reserve(userID, showtimeID uint) (orderID uint, err error)
+	Cancel(reservationID, showtimeID, userID uint) error
 }
 
 type reservationService struct {
@@ -34,4 +35,10 @@ func (s *reservationService) Reserve(userID, showtimeID uint) (orderID uint, err
 		return 0, err
 	}
 	return orderID, nil
+}
+
+// Cancel rolls back a reservation created by Reserve. Used by the workflow
+// when the follow-up MQ messages fail to send. Idempotent.
+func (s *reservationService) Cancel(reservationID, showtimeID, userID uint) error {
+	return s.Cache.CancelReservation(reservationID, showtimeID, userID)
 }

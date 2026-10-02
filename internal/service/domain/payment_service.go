@@ -8,7 +8,9 @@ import (
 )
 
 type PaymentService interface {
-	StartMockPay(reservationID uint) error
+	// StartMockPay simulates paying and marks the reservation PAID.
+	// Idempotent: see cache.PaidStatus for the possible outcomes.
+	StartMockPay(reservationID uint) (cache.PaidStatus, error)
 	MarkTimeout(reservationID uint) error
 }
 
@@ -24,16 +26,9 @@ func NewPaymentService(cache *cache.RedisCache) *paymentService {
 
 var _ PaymentService = (*paymentService)(nil)
 
-func (s *paymentService) StartMockPay(reservationID uint) error {
+func (s *paymentService) StartMockPay(reservationID uint) (cache.PaidStatus, error) {
 	time.Sleep(time.Duration(rand.Intn(901)+100) * time.Millisecond)
 
-	if err := s.markPaid(reservationID); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (s *paymentService) markPaid(reservationID uint) error {
 	return s.Cache.MarkTicketAsPaid(reservationID)
 }
 

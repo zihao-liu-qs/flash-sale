@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"errors"
 	"fmt"
 
 	"gorm.io/gorm"
@@ -39,10 +40,13 @@ func (s *orderService) CreateOrderFromReservation(reservationID uint) error {
 			return err
 		}
 
-		// 检查订单是否已存在
-		_, err = s.Repo.GetByID(reservationID)
+		// 检查订单是否已存在（幂等：消息重复消费时直接返回成功）
+		_, err = s.Repo.WithTx(tx).GetByID(reservationID)
 		if err == nil {
 			return nil // 订单已存在，返回成功
+		}
+		if !errors.Is(err, gorm.ErrRecordNotFound) {
+			return err // DB 本身出错（连接抖动等），返回错误让消费端重试
 		}
 
 		// 从 map 中提取数据（需要类型转换）
@@ -58,11 +62,15 @@ func (s *orderService) CreateOrderFromReservation(reservationID uint) error {
 			userID = uint(id)
 		}
 
-		s.Repo.Create(&model.Order{
+		// 写入必须走事务 tx，且错误必须上抛——否则入库失败会被吞掉，
+		// 消费端 Ack 后订单永久丢失
+		if err := s.Repo.WithTx(tx).Create(&model.Order{
 			ID:         reservationID,
 			ShowtimeID: showtimeID,
 			UserID:     userID,
-		})
+		}); err != nil {
+			return err
+		}
 		return nil
 	})
 }
