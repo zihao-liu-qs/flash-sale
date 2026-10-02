@@ -81,8 +81,9 @@ func setupTestDB(t *testing.T, userCount, showtimeCount, ticketCount int) *gorm.
 
 	for i := 1; i <= showtimeCount; i++ {
 		showtime := model.Showtime{
-			MovieID: 1,
-			StartAt: time.Now().Add(time.Duration(i*2) * time.Hour),
+			MovieID:      1,
+			StartAt:      time.Now().Add(time.Duration(i*2) * time.Hour),
+			TotalTickets: ticketCount,
 		}
 		db.Create(&showtime)
 	}

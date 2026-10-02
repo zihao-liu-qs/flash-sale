@@ -142,6 +142,7 @@ var markTicketAsTimeoutScript = redis.NewScript(`
 	local resKey = KEYS[1]
 	local status = redis.call("HGET", resKey, "status")
 	local showtime_id = redis.call("HGET", resKey, "showtime_id")
+	local user_id = redis.call("HGET", resKey, "user_id")
 
 	-- reservation 不存在：说明该订单已被回滚（消息发送失败时），
 	-- 延时消息属于残留消息，消费端应视为已处理而非失败重试
@@ -153,7 +154,10 @@ var markTicketAsTimeoutScript = redis.NewScript(`
 		return -2
 	end
 
-	-- 构建库存键
+	-- 订单生命周期终结时，库存和购买资格必须在同一个 Lua 里原子释放：
+	-- 若只回滚库存不删已购标记，用户将永远无法再购买该场次；
+	-- 原子释放也保证「先释放、后重购」的次序——DEL 不会误删用户
+	-- 重购后新订单写下的已购标记
 	local remainKey = "showtime:" .. showtime_id .. ":ticket:remain"
 
 	-- 更新状态为超时
@@ -161,6 +165,12 @@ var markTicketAsTimeoutScript = redis.NewScript(`
 
 	-- 增加对应场次的剩余票数
 	redis.call("INCR", remainKey)
+
+	-- 释放用户购买资格，超时未支付后可重新购买
+	if user_id then
+		local orderedKey = "user:" .. user_id .. ":showtime:" .. showtime_id .. ":ordered"
+		redis.call("DEL", orderedKey)
+	end
 
 	return 1
 `)

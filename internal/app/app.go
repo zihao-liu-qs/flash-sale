@@ -71,14 +71,15 @@ func New(config *config.Config, db *gorm.DB, cache *cache.RedisCache, mqConn *am
 }
 
 func (app *App) Init() error {
-	// init redis
+	// init redis：库存以 DB 中场次的 TotalTickets 为准（本 demo 启动时清库清缓存，
+	// 无已售订单，故剩余库存 = 总票数）
 	showtimeIDTicketsMap := make(map[uint]int)
 	showtimes, err := app.ShowtimeService.GetAllShowtimes()
 	if err != nil {
 		return err
 	}
 	for _, showtime := range showtimes {
-		showtimeIDTicketsMap[showtime.ID] = 100 // 100 tickets
+		showtimeIDTicketsMap[showtime.ID] = showtime.TotalTickets
 	}
 	if err := app.Cache.Init(showtimeIDTicketsMap); err != nil {
 		return err

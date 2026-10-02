@@ -28,6 +28,9 @@ type Showtime struct {
 	ID      uint      `gorm:"primaryKey"`
 	MovieID uint      `gorm:"not null;index"`
 	StartAt time.Time `gorm:"not null"`
+	// 场次总票数。库存的 DB 真相：启动时据此初始化 Redis 库存，
+	// 替代原先的硬编码 100
+	TotalTickets int `gorm:"not null"`
 }
 
 type Order struct {

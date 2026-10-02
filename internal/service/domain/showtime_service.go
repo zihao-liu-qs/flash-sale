@@ -12,7 +12,7 @@ import (
 )
 
 type ShowtimeService interface {
-	CreateShowtime(movieID uint, startTime time.Time) error
+	CreateShowtime(movieID uint, startTime time.Time, totalTickets int) error
 	GetShowtimeByID(showtimeID uint) (*model.Showtime, error)
 	GetShowtimesByMovieID(movieID uint) ([]model.Showtime, error)
 	GetShowtimesByMovieIDTx(tx *gorm.DB, movieID uint) ([]model.Showtime, error)
@@ -33,11 +33,12 @@ func NewShowtimeService(db *gorm.DB, showtimeRepo repository.ShowtimeRepo) *show
 	}
 }
 
-func (s *showtimeService) CreateShowtime(movieID uint, startTime time.Time) error {
+func (s *showtimeService) CreateShowtime(movieID uint, startTime time.Time, totalTickets int) error {
 	return s.db.Transaction(func(tx *gorm.DB) error {
 		showtime := &model.Showtime{
-			MovieID: uint(movieID),
-			StartAt: startTime,
+			MovieID:      uint(movieID),
+			StartAt:      startTime,
+			TotalTickets: totalTickets,
 		}
 		return s.repo.WithTx(tx).Create(showtime)
 	})
