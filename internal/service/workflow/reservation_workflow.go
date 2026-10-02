@@ -15,15 +15,21 @@ import (
 // confirm before treating the publish as failed and rolling back.
 const publishConfirmTimeout = 5 * time.Second
 
+// confirmChannelPoolSize 是热路径上复用的 confirm channel 数量。
+// 稳态并发远超此值也没关系：池空时临时新建，只是退化为旧的每请求创建模式。
+const confirmChannelPoolSize = 16
+
 type ReservationWorkflow struct {
 	ReservationService domain.ReservationService
 	MQConn             *amqp.Connection
+	ChPool             *mq.ChannelPool
 }
 
 func NewReservationWorkflow(reservationService domain.ReservationService, mqConn *amqp.Connection) *ReservationWorkflow {
 	return &ReservationWorkflow{
 		ReservationService: reservationService,
 		MQConn:             mqConn,
+		ChPool:             mq.NewConfirmChannelPool(mqConn, confirmChannelPoolSize),
 	}
 }
 
@@ -35,12 +41,13 @@ func (w *ReservationWorkflow) Reserve(userID, showtimeID uint) error {
 		return err
 	}
 
-	ch, err := mq.NewConfirmingChannel(w.MQConn)
+	// 从池中借用 confirm channel（用完归还），避免每请求一次 channel.open 网络往返
+	ch, err := w.ChPool.Get()
 	if err != nil {
 		w.rollbackReservation(reservationID, showtimeID, userID)
 		return err
 	}
-	defer ch.Close()
+	defer w.ChPool.Put(ch)
 
 	// 先发延时消息、再发即时消息：即时消息才是触发订单流转（支付/入库）的那条。
 	// 只要它最后发，任何一步失败时订单都还没有被任何消费者看到过，
