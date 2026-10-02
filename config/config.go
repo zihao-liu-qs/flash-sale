@@ -11,6 +11,7 @@ type Config struct {
 	Addr        string
 	CacheURL    string
 	MQURL       string
+	PprofAddr   string
 }
 
 func LoadConfig() (*Config, error) {
@@ -26,5 +27,13 @@ func LoadConfig() (*Config, error) {
 		Addr:        addr,
 		CacheURL:    cacheURL,
 		MQURL:       mqURL,
+		PprofAddr:   getEnvOr("PPROF_ADDR", "localhost:6060"),
 	}, nil
+}
+
+func getEnvOr(key, fallback string) string {
+	if v := os.Getenv(key); v != "" {
+		return v
+	}
+	return fallback
 }

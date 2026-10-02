@@ -2,6 +2,8 @@ package main
 
 import (
 	"log"
+	"net/http"
+	_ "net/http/pprof"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/driver/postgres"
@@ -45,6 +47,15 @@ func main() {
 	if err := app.Init(); err != nil {
 		log.Fatalf("Failed to init app: %v", err)
 	}
+
+	// pprof 性能分析端点（/debug/pprof/），独立于业务 HTTP 服务，
+	// 供压测时采集 CPU/goroutine profile 定位热点
+	go func() {
+		log.Printf("pprof listening on %s", cfg.PprofAddr)
+		if err := http.ListenAndServe(cfg.PprofAddr, nil); err != nil {
+			log.Printf("pprof server exited: %v", err)
+		}
+	}()
 
 	r := gin.New()
 
